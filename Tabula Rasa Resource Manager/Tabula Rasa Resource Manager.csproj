@@ -74,9 +74,11 @@
     <Compile Include="ChunkFile\Chunk.cs" />
     <Compile Include="ChunkFile\ChunkFile.cs" />
     <Compile Include="ChunkFile\CPDFChunk.cs" />
+    <Compile Include="ChunkFile\DECLChunk.cs" />
     <Compile Include="ChunkFile\EFCTChunk.cs" />
     <Compile Include="ChunkFile\GBODChunk.cs" />
     <Compile Include="ChunkFile\GPCEChunk.cs" />
+    <Compile Include="ChunkFile\GSKNChunk.cs" />
     <Compile Include="ChunkFile\INDXChunk.cs" />
     <Compile Include="ChunkFile\assID\ISTRChunk.cs" />
     <Compile Include="ChunkFile\PARMChunk.cs" />
@@ -98,6 +100,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Types.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

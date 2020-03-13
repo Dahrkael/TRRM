@@ -120,6 +120,7 @@ namespace TRRM
             { ChunkType.phyCPDefinitionGroupImpl, "CPDG" },
             { ChunkType.phyCPDefinitionImpl, "CPDF" },
             { ChunkType.gfxGeometryPiece, "GPCE" },
+            { ChunkType.gfxGeometryPieceSkinned, "GSKN" },
             { ChunkType.phySkeleton, "PSKE" },
             { ChunkType.phyBone, "PBON" },
             { ChunkType.phyBoneSharedData, "BDAT" },
@@ -162,6 +163,8 @@ namespace TRRM
                     return new CPDFChunk();
                 case ChunkType.gfxGeometryPiece:
                     return new GPCEChunk();
+                case ChunkType.gfxGeometryPieceSkinned:
+                    return new GSKNChunk();
             }
 
             Debugger.Break();

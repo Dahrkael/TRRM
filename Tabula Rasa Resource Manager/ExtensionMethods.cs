@@ -44,6 +44,30 @@ namespace TRRM
             return data;
         }
 
+        public static Vertex ReadVertex( this System.IO.BinaryReader reader )
+        {
+            Vertex vertex = new Vertex()
+            {
+                X = reader.ReadSingle(),
+                Y = reader.ReadSingle(),
+                Z = reader.ReadSingle()
+            };
+
+            return vertex;
+        }
+
+        public static Face ReadFace( this System.IO.BinaryReader reader )
+        {
+            Face face = new Face()
+            {
+                A = reader.ReadUInt16(),
+                B = reader.ReadUInt16(),
+                C = reader.ReadUInt16()
+            };
+
+            return face;
+        }
+
         public static float[,] ReadMatrix( this System.IO.BinaryReader reader, uint rows, uint columns )
         {
             float[,] matrix = new float[ rows, columns ];

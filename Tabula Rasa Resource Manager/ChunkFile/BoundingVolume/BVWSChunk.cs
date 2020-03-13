@@ -11,14 +11,14 @@ namespace TRRM
         BVOLChunk BoundingVolume;
         UInt32 IndexCount;
         UInt32 VertexCount;
-        List<UInt16[]> Indices;
-        List<float[]> Vertices;
+        List<Face> Faces;
+        List<Vertex> Vertices;
         bool Unknown1;
 
         public override bool Load( BinaryReader reader )
         {
-            Indices = new List<UInt16[]>();
-            Vertices = new List<float[]>();
+            Faces = new List<Face>();
+            Vertices = new List<Vertex>();
 
             Start( reader );
             if ( !ReadHeader( reader ) || !IsValidVersion( 1, 2 ) )
@@ -38,16 +38,15 @@ namespace TRRM
             LogInfo( "vertices offset: " + reader.BaseStream.Position );
             for ( UInt32 i = 0; i < VertexCount; i++ )
             {
-                Vertices.Add( reader.ReadFloatArray( 3 ) );
+                Vertex vertex = reader.ReadVertex();
+                Vertices.Add( vertex );
             }
 
-            LogInfo( "indices offset: " + reader.BaseStream.Position );
+            LogInfo( "faces offset: " + reader.BaseStream.Position );
             for ( UInt32 i = 0; i < IndexCount; i++ )
             {
-                UInt16[] set = new UInt16[ 3 ];
-                set[ 0 ] = reader.ReadUInt16();
-                set[ 1 ] = reader.ReadUInt16();
-                set[ 2 ] = reader.ReadUInt16();
+                Face face = reader.ReadFace();
+                Faces.Add( face );
             }
 
             if (Header.Version == 2)
@@ -55,7 +54,7 @@ namespace TRRM
                 Unknown1 = reader.ReadBoolean();
             }
 
-            LogInfo( "index count: " + IndexCount );
+            LogInfo( "face count: " + IndexCount );
             LogInfo( "vertex count: " + VertexCount );
             LogInfo( "unk1: " + Unknown1 );
 

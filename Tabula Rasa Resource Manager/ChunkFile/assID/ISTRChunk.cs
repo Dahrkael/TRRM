@@ -19,6 +19,7 @@ namespace TRRM
             }
 
             ID = reader.ReadCString();
+            LogInfo( "id: " + ID );
 
             End( reader );
             return true;

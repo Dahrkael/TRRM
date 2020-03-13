@@ -9,15 +9,18 @@ namespace TRRM
 {
     public class GBODChunk : Chunk
     {
+        public string WSName;
         public float Unknown1;
         public bool Unknown2;
         public BBOXChunk BoundingBox;
         public CPDGChunk CPDefinitions;
         public PSKEChunk Skeleton;
-        public string WSName;
-
+        public List<Chunk> Children;
+        
         public override bool Load( BinaryReader reader )
         {
+            Children = new List<Chunk>();
+
             Start( reader );
             if ( !ReadHeader( reader ) || !IsValidVersion( 1, 2, 3 ) )
             {
@@ -76,14 +79,14 @@ namespace TRRM
             }
 
             Int32 othersCount = reader.ReadInt32(); // unsure
-            List<Chunk> others = new List<Chunk>();
+            Children = new List<Chunk>();
             for ( Int32 i = 0; i < othersCount; i++ )
             {
                 // more tags
                 ChunkType nextChunk = ChunkUtils.PeekNextChunk( reader );
                 Chunk chunk = ChunkUtils.Instance( nextChunk );
                 Debug.Assert( chunk.Load( reader ) );
-                others.Add( chunk );
+                Children.Add( chunk );
             }
 
             Int32 unkCount = reader.ReadInt32();

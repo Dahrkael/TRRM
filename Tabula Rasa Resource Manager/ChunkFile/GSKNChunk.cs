@@ -6,31 +6,30 @@ using System.Text;
 
 namespace TRRM
 {
-    public class INDXChunk : Chunk
+    public class GSKNChunk : Chunk
     {
-        Int32 FaceCount;
-        List<Face> Faces;
+        GPCEChunk Geometry;
 
         public override bool Load( BinaryReader reader )
         {
-            Faces = new List<Face>();
-
             Start( reader );
             if ( !ReadHeader( reader ) || !IsValidVersion( 1 ) )
             {
                 return false;
             }
 
-            FaceCount = reader.ReadInt32() / 3;
-            LogInfo( "Faces offset: " + reader.BaseStream.Position );
-
-            for ( Int32 i = 0; i < FaceCount; i++ )
+            Geometry = new GPCEChunk();
+            if ( !Geometry.Load( reader ) )
             {
-                Face face = reader.ReadFace();
-                Faces.Add( face );
+                return false;
             }
 
-            LogInfo( "Face count: " + FaceCount );
+            UInt32 count = reader.ReadUInt32();
+            for(UInt32 i = 0; i < count; i++ )
+            {
+                string boneName = reader.ReadCString();
+                LogInfo( "bone: " + boneName );
+            }
 
             Skip( reader );
 
@@ -40,7 +39,7 @@ namespace TRRM
 
         public override ChunkType Type()
         {
-            return ChunkType.gfxIndexBufferImpl;
+            return ChunkType.gfxGeometryPieceSkinned;
         }
     }
 }

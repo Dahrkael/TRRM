@@ -19,6 +19,7 @@ namespace TRRM
             }
 
             ID = reader.ReadInt32();
+            LogInfo( "id: " + ID );
 
             End( reader );
             return true;

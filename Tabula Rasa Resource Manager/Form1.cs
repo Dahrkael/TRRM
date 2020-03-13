@@ -118,6 +118,19 @@ namespace TRRM
                         if ( chunkie.Load( memory ) )
                         {
                             MessageBox.Show( "SUCCESS" );
+                            /*
+                            saveDialog.FileName = System.IO.Path.GetFileName( file.Filename ) + ".unpacked";
+                            DialogResult ret = saveDialog.ShowDialog();
+                            if ( ( ret == DialogResult.OK ) && ( saveDialog.FileName != "" ) )
+                            {
+                                ChunkFile
+                                using ( BinaryWriter writer = new BinaryWriter( File.Open( saveDialog.FileName, FileMode.Create, FileAccess.Write ) ) )
+                                {
+                                    writer.Write( buffer );
+                                }
+                                MessageBox.Show( "Resource extracted!" );
+                            }
+                            */
                         }
                         else
                         {
