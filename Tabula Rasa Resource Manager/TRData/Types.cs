@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace TRRM
 {
+    [StructLayout( LayoutKind.Sequential )]
     public struct Vertex
     {
         public float X;
@@ -19,6 +21,7 @@ namespace TRRM
         }
     }
 
+    [StructLayout( LayoutKind.Sequential )]
     public struct Face
     {
         public UInt16 A;
@@ -33,6 +36,7 @@ namespace TRRM
         }
     }
 
+    [StructLayout( LayoutKind.Sequential )]
     public struct UV
     {
         public float U;

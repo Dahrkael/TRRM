@@ -70,40 +70,40 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChunkFile\assID\assIDChunk.cs" />
-    <Compile Include="ChunkFile\assID\IINTChunk.cs" />
-    <Compile Include="ChunkFile\assID\INONChunk.cs" />
-    <Compile Include="ChunkFile\BBOXChunk.cs" />
-    <Compile Include="ChunkFile\BDATChunk.cs" />
-    <Compile Include="ChunkFile\BoundingVolume\BVACChunk.cs" />
-    <Compile Include="ChunkFile\BoundingVolume\BVBXChunk.cs" />
-    <Compile Include="ChunkFile\BoundingVolume\BVOLChunk.cs" />
-    <Compile Include="ChunkFile\BoundingVolume\BVSPChunk.cs" />
-    <Compile Include="ChunkFile\BoundingVolume\BVSFChunk.cs" />
-    <Compile Include="ChunkFile\BoundingVolume\BVWSChunk.cs" />
-    <Compile Include="ChunkFile\BoundingVolume\BVCPChunk.cs" />
-    <Compile Include="ChunkFile\CDPGChunk.cs" />
-    <Compile Include="ChunkFile\Chunk.cs" />
-    <Compile Include="ChunkFile\ChunkFile.cs" />
-    <Compile Include="ChunkFile\CPDFChunk.cs" />
-    <Compile Include="ChunkFile\DECLChunk.cs" />
-    <Compile Include="ChunkFile\EFCTChunk.cs" />
-    <Compile Include="ChunkFile\GBODChunk.cs" />
-    <Compile Include="ChunkFile\GPCEChunk.cs" />
-    <Compile Include="ChunkFile\GSKNChunk.cs" />
-    <Compile Include="ChunkFile\INDXChunk.cs" />
-    <Compile Include="ChunkFile\assID\ISTRChunk.cs" />
-    <Compile Include="ChunkFile\PARMChunk.cs" />
-    <Compile Include="ChunkFile\PBONChunk.cs" />
-    <Compile Include="ChunkFile\PSKEChunk.cs" />
-    <Compile Include="ChunkFile\USDAChunk.cs" />
-    <Compile Include="ChunkFile\VERTChunk.cs" />
-    <Compile Include="DDSImage.cs" />
-    <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="GLMFile.cs" />
-    <Compile Include="TargaImage.cs" />
-    <Compile Include="TRData.cs" />
-    <Compile Include="PackedFile.cs" />
+    <Compile Include="TRData\ChunkFile\assID\assIDChunk.cs" />
+    <Compile Include="TRData\ChunkFile\assID\IINTChunk.cs" />
+    <Compile Include="TRData\ChunkFile\assID\INONChunk.cs" />
+    <Compile Include="TRData\ChunkFile\BBOXChunk.cs" />
+    <Compile Include="TRData\ChunkFile\BDATChunk.cs" />
+    <Compile Include="TRData\ChunkFile\BoundingVolume\BVACChunk.cs" />
+    <Compile Include="TRData\ChunkFile\BoundingVolume\BVBXChunk.cs" />
+    <Compile Include="TRData\ChunkFile\BoundingVolume\BVOLChunk.cs" />
+    <Compile Include="TRData\ChunkFile\BoundingVolume\BVSPChunk.cs" />
+    <Compile Include="TRData\ChunkFile\BoundingVolume\BVSFChunk.cs" />
+    <Compile Include="TRData\ChunkFile\BoundingVolume\BVWSChunk.cs" />
+    <Compile Include="TRData\ChunkFile\BoundingVolume\BVCPChunk.cs" />
+    <Compile Include="TRData\ChunkFile\CDPGChunk.cs" />
+    <Compile Include="TRData\ChunkFile\Chunk.cs" />
+    <Compile Include="TRData\ChunkFile\ChunkFile.cs" />
+    <Compile Include="TRData\ChunkFile\CPDFChunk.cs" />
+    <Compile Include="TRData\ChunkFile\DECLChunk.cs" />
+    <Compile Include="TRData\ChunkFile\EFCTChunk.cs" />
+    <Compile Include="TRData\ChunkFile\GBODChunk.cs" />
+    <Compile Include="TRData\ChunkFile\GPCEChunk.cs" />
+    <Compile Include="TRData\ChunkFile\GSKNChunk.cs" />
+    <Compile Include="TRData\ChunkFile\INDXChunk.cs" />
+    <Compile Include="TRData\ChunkFile\assID\ISTRChunk.cs" />
+    <Compile Include="TRData\ChunkFile\PARMChunk.cs" />
+    <Compile Include="TRData\ChunkFile\PBONChunk.cs" />
+    <Compile Include="TRData\ChunkFile\PSKEChunk.cs" />
+    <Compile Include="TRData\ChunkFile\USDAChunk.cs" />
+    <Compile Include="TRData\ChunkFile\VERTChunk.cs" />
+    <Compile Include="Viewer\DDSImage.cs" />
+    <Compile Include="TRData\ExtensionMethods.cs" />
+    <Compile Include="TRData\GLMFile.cs" />
+    <Compile Include="Viewer\TargaImage.cs" />
+    <Compile Include="TRData\TRData.cs" />
+    <Compile Include="TRData\PackedFile.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -112,7 +112,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Types.cs" />
+    <Compile Include="TRData\Types.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -141,6 +141,7 @@
   <ItemGroup>
     <Content Include="icon_b.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
