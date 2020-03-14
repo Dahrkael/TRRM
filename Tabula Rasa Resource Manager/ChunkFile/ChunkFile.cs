@@ -62,9 +62,14 @@ namespace TRRM
 
         private bool ReadHeader( BinaryReader reader )
         {
-            reader.BaseStream.Seek( -4, SeekOrigin.End );
-
-            UInt32 headerOffset = reader.ReadUInt32();
+            UInt32 headerOffset = 0;
+            string check = reader.ReadBytesAsString( 4, true );
+            if ( check != "CHNK" )
+            {
+                reader.BaseStream.Seek( -4, SeekOrigin.End );
+                headerOffset = reader.ReadUInt32();    
+            }
+            
             reader.BaseStream.Seek( headerOffset, SeekOrigin.Begin );
 
             ChunkFileHeader header = new ChunkFileHeader()

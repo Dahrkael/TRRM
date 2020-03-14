@@ -7,23 +7,16 @@ using System.Text;
 
 namespace TRRM
 {
-    public struct DECLData
-    {
-        public byte A;
-        public byte B;
-        public byte C;
-        public byte D;
-        public Int32 Stride;
-    }
+    
 
     public class DECLChunk : Chunk
     {
-        public List<DECLData> Entries;
+        public List<VertexDeclaration> Declarations;
         public Int32 TotalStride;
 
         public override bool Load( BinaryReader reader )
         {
-            Entries = new List<DECLData>();
+            Declarations = new List<VertexDeclaration>();
 
             Start( reader );
             if ( !ReadHeader( reader ) || !IsValidVersion( 1, 2 ) )
@@ -49,60 +42,31 @@ namespace TRRM
                 case 2:
                     {
                         Int32 count = reader.ReadInt32();
+                        UInt16 currentOffset = 0;
                         for ( Int32 i = 0; i < count; i++ )
                         {
-                            DECLData data = new DECLData()
+                            VertexDeclaration declaration = new VertexDeclaration()
                             {
-                                A = reader.ReadByte(),
-                                B = reader.ReadByte(),
-                                C = reader.ReadByte(),
-                                D = reader.ReadByte()
+                                Offset = currentOffset,
+                                Type = (VertexDeclType)reader.ReadByte(),
+                                Method = (VertexDeclMethod)reader.ReadByte(),
+                                Usage = (VertexDeclUsage)reader.ReadByte(),
+                                UsageIndex = reader.ReadByte()
                             };
-                            data.Stride = Stride( data.A );
-                            Entries.Add( data );
+                            Declarations.Add( declaration );
+                            currentOffset += declaration.Stride();
                         }
                     }
                     break;
             }
 
-            TotalStride = Entries.Sum( d => d.Stride );
+            TotalStride = Declarations.Sum( d => d.Stride() );
 
-            Entries.ForEach( data => LogInfo( "a: " + data.A + " b: " + data.B + " c: " + data.C + " d: " + data.D + " stride: " + data.Stride ) );
+            Declarations.ForEach( data => LogInfo( "O: " + data.Offset + " T: " + data.Type + " M: " + data.Method + " U: " + data.Usage + " I: " + data.UsageIndex + " stride: " + data.Stride() ) );
             LogInfo( "total stride: " + TotalStride );
 
             End( reader );
             return true;
-        }
-
-        private Int32 Stride( byte data )
-        {
-            // ¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
-            switch ( data )
-            {
-                case 0:
-                case 4:
-                case 5:
-                case 6:
-                case 8:
-                case 9:
-                case 11:
-                case 13:
-                case 14:
-                case 15:
-                    return 4;
-                case 1:
-                case 7:
-                case 10:
-                case 12:
-                case 16:
-                    return 8;
-                case 2:
-                    return 12;
-                case 3:
-                    return 16;
-                default:
-                    return 0;
-            }
         }
 
         public override ChunkType Type()

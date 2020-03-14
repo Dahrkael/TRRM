@@ -8,6 +8,9 @@ namespace TRRM
 {
     public class PARMChunk : Chunk
     {
+        public string Key;
+        assIDChunk Value;
+
         public override bool Load( BinaryReader reader )
         {
             Start( reader );
@@ -16,8 +19,9 @@ namespace TRRM
                 return false;
             }
 
-            string algo = reader.ReadCString();
-            Int32 otro = reader.ReadInt32();
+            Key = reader.ReadCString();
+            LogInfo( "key: " + Key );
+            Int32 unk1 = reader.ReadInt32();
 
             switch ( Header.Version )
             {
@@ -25,7 +29,14 @@ namespace TRRM
                     reader.ReadInt32();
                     break;
                 case 2:
-                    reader.ReadInt32();
+                    if ( unk1 == 5 )
+                    {
+                        Value = new assIDChunk();
+                        if ( !Value.Load( reader ) )
+                        {
+                            return false;
+                        }
+                    }
                     break;
                 case 3:
                     reader.ReadInt32();
@@ -50,7 +61,6 @@ namespace TRRM
                     break;
             }
 
-            LogInfo( "unk1: " + algo + " unk2: " + otro );
             Skip( reader );
 
             End( reader );

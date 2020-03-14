@@ -31,8 +31,6 @@ namespace TRRM
                 LogInfo( "bone: " + boneName );
             }
 
-            Skip( reader );
-
             End( reader );
             return true;
         }

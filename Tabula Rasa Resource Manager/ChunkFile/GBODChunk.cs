@@ -27,11 +27,6 @@ namespace TRRM
                 return false;
             }
 
-            if ( Header.Version != 3 )
-            {
-                Debugger.Break();
-            }
-
             if ( Header.Version == 3 )
             {
                 Unknown1 = reader.ReadSingle();

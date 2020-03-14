@@ -9,12 +9,14 @@ namespace TRRM
 {
     public class VERTChunk : Chunk
     {
-        DECLChunk DeclChunk;
+        DECLChunk VertexDeclarations;
         List<Vertex> Vertices;
+        List<UV> UVs;
 
         public override bool Load( BinaryReader reader )
         {
             Vertices = new List<Vertex>();
+            UVs = new List<UV>();
 
             Start( reader );
             if ( !ReadHeader( reader ) || !IsValidVersion( 1, 2 ) )
@@ -25,9 +27,9 @@ namespace TRRM
             {
                 Debugger.Break();
             }
-            
-            DeclChunk = new DECLChunk();
-            if ( !DeclChunk.Load( reader ) )
+
+            VertexDeclarations = new DECLChunk();
+            if ( !VertexDeclarations.Load( reader ) )
             {
                 return false;
             }
@@ -37,34 +39,27 @@ namespace TRRM
 
             for (Int32 i = 0; i < count; i++ )
             {
-                /*
-                long hackPos = reader.BaseStream.Position;
-                for( Int32 j = 0; j < DeclChunk.Entries.Count; j++ )
+                for(Int32 j = 0; j < VertexDeclarations.Declarations.Count; j++ )
                 {
-                    DECLData data = DeclChunk.Entries[ j ];
-                    Int32 items = data.Stride / sizeof( float );
-                    if (items == 2)
+                    VertexDeclaration declaration = VertexDeclarations.Declarations[ j ];
+                    switch( declaration.Usage )
                     {
-                        float u = reader.ReadSingle();
-                        float v = reader.ReadSingle();
-                        LogInfo( "u: +" + u + " v: " + v );
-                    }
-                    else
-                    {
-                        reader.ReadBytes( data.Stride );
+                        case VertexDeclUsage.Position:
+                            Vertex vertex = reader.ReadVertex();
+                            Vertices.Add( vertex );
+                            break;
+                        case VertexDeclUsage.TextureCoordinate:
+                            UV uv = reader.ReadUV();
+                            UVs.Add( uv );
+                            break;
+                        default:
+                            reader.ReadBytes( declaration.Stride() );
+                            break;
                     }
                 }
-
-                reader.BaseStream.Seek( hackPos, SeekOrigin.Begin );
-                */
-                Vertex vertex = reader.ReadVertex();
-                Vertices.Add( vertex );
-                reader.ReadBytes( DeclChunk.TotalStride - 12 );
             }
             
             LogInfo( "vertex count: " + count );
-            
-            Skip( reader );
 
             End( reader );
             return true;

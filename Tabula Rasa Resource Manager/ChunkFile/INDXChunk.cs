@@ -32,8 +32,6 @@ namespace TRRM
 
             LogInfo( "Face count: " + FaceCount );
 
-            Skip( reader );
-
             End( reader );
             return true;
         }

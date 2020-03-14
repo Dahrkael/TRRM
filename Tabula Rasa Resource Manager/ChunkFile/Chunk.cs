@@ -126,6 +126,11 @@ namespace TRRM
             { ChunkType.phyBoneSharedData, "BDAT" },
             { ChunkType.gfxGeometryNode, "GNOD" },
             { ChunkType.phyBoundingVolume, "BVOL" },
+            { ChunkType.phyBVAlignedCylinder, "BVAC" },
+            { ChunkType.phyBVBox, "BVBX" },
+            { ChunkType.phyBVCapsule, "BVCP" },
+            { ChunkType.phyBVSphere, "BVSP" },
+            { ChunkType.phyBVSurface, "BVSF" },
             { ChunkType.phyBVWalkableSurface, "BVWS" },
             { ChunkType.gfxIndexBufferImpl, "INDX" },
             { ChunkType.gfxVertexBufferImpl, "VERT" },
@@ -179,7 +184,10 @@ namespace TRRM
             string tag = reader.ReadBytesAsString( 4 );
             reader.BaseStream.Seek( -4, SeekOrigin.Current );
             ChunkType type = ChunkUtils.Type( tag );
-            Console.WriteLine( "Next chunk: {0} ({1})", type, tag );
+            if ( type == ChunkType.None )
+            {
+                Console.WriteLine( "Next chunk: {0} ({1})", type, tag );
+            }
             return type;
         }
     }

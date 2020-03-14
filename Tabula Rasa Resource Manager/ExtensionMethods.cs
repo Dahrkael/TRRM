@@ -68,6 +68,17 @@ namespace TRRM
             return face;
         }
 
+        public static UV ReadUV( this System.IO.BinaryReader reader )
+        {
+            UV uv = new UV()
+            {
+                U = reader.ReadSingle(),
+                V = reader.ReadSingle()
+            };
+
+            return uv;
+        }
+
         public static float[,] ReadMatrix( this System.IO.BinaryReader reader, uint rows, uint columns )
         {
             float[,] matrix = new float[ rows, columns ];

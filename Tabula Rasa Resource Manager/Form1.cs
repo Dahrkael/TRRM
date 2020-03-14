@@ -199,5 +199,36 @@ namespace TRRM
                 btnSearch.PerformClick();
             }
         }
+
+        private void btnAll_Click( object sender, EventArgs e )
+        {
+            UInt32 good = 0;
+            UInt32 bad = 0;
+
+            foreach ( GLMFile glmFile in trData.GLMFiles )
+            {
+                foreach ( PackedFile trFile in glmFile.Files )
+                {
+                    if ( trFile.GetFileType() == TRFileType.GEO )
+                    {
+                        using ( MemoryStream memory = new MemoryStream( trFile.GetContents() ) )
+                        {
+                            Console.WriteLine( "### {0}", trFile.Filename );
+                            ChunkFile chunkie = new ChunkFile();
+                            if ( chunkie.Load( memory ) )
+                            {
+                                good++;
+                            }
+                            else
+                            {
+                                bad++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            Console.WriteLine( "good: {0} bad: {1}", good, bad );
+        }
     }
 }

@@ -8,12 +8,12 @@ namespace TRRM
 {
     public class BVWSChunk : Chunk
     {
-        BVOLChunk BoundingVolume;
-        UInt32 IndexCount;
-        UInt32 VertexCount;
-        List<Face> Faces;
-        List<Vertex> Vertices;
-        bool Unknown1;
+        public BVOLChunk BoundingVolume;
+        public UInt32 IndexCount;
+        public UInt32 VertexCount;
+        public List<Face> Faces;
+        public List<Vertex> Vertices;
+        public bool Unknown1;
 
         public override bool Load( BinaryReader reader )
         {

@@ -9,8 +9,8 @@ namespace TRRM
 {
     public class assIDChunk : Chunk
     {
-        Int32 ID1;
-        string ID2;
+        public Int32 ID1;
+        public string ID2;
 
         public override bool Load( BinaryReader reader )
         {
@@ -52,6 +52,15 @@ namespace TRRM
         public override ChunkType Type()
         {
             return ChunkType.assID;
+        }
+
+        public override string ToString()
+        {
+            if ( String.IsNullOrEmpty( ID2 ) )
+            {
+                return ID1.ToString();
+            }
+            return ID2;
         }
     }
 }

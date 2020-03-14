@@ -41,6 +41,7 @@
             this.pbPreview = new System.Windows.Forms.PictureBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.chooseFolderDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.btnAll = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbPreview)).BeginInit();
@@ -70,6 +71,7 @@
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox1.Controls.Add(this.btnAll);
             this.groupBox1.Controls.Add(this.btnSearch);
             this.groupBox1.Controls.Add(this.txtSearch);
             this.groupBox1.Controls.Add(this.btnTest);
@@ -163,6 +165,16 @@
             // 
             this.chooseFolderDialog.ShowNewFolderButton = false;
             // 
+            // btnAll
+            // 
+            this.btnAll.Location = new System.Drawing.Point(501, 21);
+            this.btnAll.Name = "btnAll";
+            this.btnAll.Size = new System.Drawing.Size(19, 23);
+            this.btnAll.TabIndex = 9;
+            this.btnAll.Text = "A";
+            this.btnAll.UseVisualStyleBackColor = true;
+            this.btnAll.Click += new System.EventHandler(this.btnAll_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -197,6 +209,7 @@
         private System.Windows.Forms.Button btnTest;
         private System.Windows.Forms.Button btnSearch;
         private System.Windows.Forms.TextBox txtSearch;
+        private System.Windows.Forms.Button btnAll;
     }
 }
 
