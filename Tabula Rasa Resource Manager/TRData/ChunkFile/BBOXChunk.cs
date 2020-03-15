@@ -9,7 +9,9 @@ namespace TRRM
     public class BBOXChunk : Chunk
     {
         public bool Unknown2;
-        public float[,] UnknownMatrix3x3;
+        public Vertex VertexMin;
+        public Vertex VertexMax;
+        public Vertex Origin;
         public float Unknown1;
 
         public override bool Load( BinaryReader reader )
@@ -24,7 +26,10 @@ namespace TRRM
             {
                 Unknown2 = reader.ReadBoolean();
             }
-            UnknownMatrix3x3 = reader.ReadMatrix( 3, 3 );
+            
+            VertexMin = reader.ReadVertex();
+            VertexMax = reader.ReadVertex();
+            Origin = reader.ReadVertex();
             Unknown1 = reader.ReadSingle();
 
             End( reader );

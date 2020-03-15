@@ -30,6 +30,11 @@ namespace TRRM
             return data;
         }
 
+        public override string ToString()
+        {
+            return String.Format( "V[{0} : {1} : {2}]", X, Y, Z );
+        }
+
         public const Int32 Size = sizeof( float ) * 3;
     }
 

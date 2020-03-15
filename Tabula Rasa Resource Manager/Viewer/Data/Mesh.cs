@@ -30,6 +30,9 @@ namespace TRRM.Viewer.Data
         private D3D9.VertexBuffer vertexBuffer;
         private Int32 vertexCount;
 
+        // bounding box
+        private BoundingBoxMesh boundingBox;
+
         // textures
         private D3D9.Texture diffuseTexture;
         private D3D9.Texture normalTexture;
@@ -37,7 +40,11 @@ namespace TRRM.Viewer.Data
 
         // matrices
         public Matrix Position { get; set; }
-        public Matrix Rotation { get; set; }
+        private Matrix rotation;
+        public Matrix Rotation {
+            get { return rotation; }
+            set { rotation = value; if ( boundingBox != null ) { boundingBox.Rotation = value; } }
+        }
         public Matrix Scale { get; set; }
 
         public Mesh( D3D9.Device device )
@@ -112,7 +119,13 @@ namespace TRRM.Viewer.Data
             diffuseTexture = D3D9.Texture.FromMemory( device, data, D3D9.Usage.WriteOnly, D3D9.Pool.Managed );
         }
 
-        public void Draw( D3D9.Device device )
+        public void CreateBoundingBox( Vertex vMin, Vertex vMax, Vertex origin )
+        {
+            boundingBox = new BoundingBoxMesh( device );
+            boundingBox.Create( vMin, vMax, origin );
+        }
+
+        public void Draw()
         {
             Matrix WorldMatrix = Matrix.Multiply( Matrix.Multiply(Rotation, Position), Scale );
             device.SetTransform( D3D9.TransformState.World, WorldMatrix );
@@ -124,6 +137,11 @@ namespace TRRM.Viewer.Data
 
             // restore matrix
             device.SetTransform( D3D9.TransformState.World, Matrix.Identity );
+
+            if ( boundingBox != null && boundingBox.Ready )
+            {
+                boundingBox.Draw();
+            }
         }
     }
 }

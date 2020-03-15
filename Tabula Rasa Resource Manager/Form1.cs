@@ -122,9 +122,6 @@ namespace TRRM
                         ChunkFile chunkie = new ChunkFile();
                         if ( chunkie.Load( memory ) )
                         {
-                            //MessageBox.Show( "SUCCESS" );
-
-                            
                             GBODChunk gbod = chunkie.Chunks[ 0 ] as GBODChunk;
                             foreach ( var child in gbod.Children )
                             {
@@ -142,7 +139,8 @@ namespace TRRM
 
                                 if ( piece != null )
                                 {
-                                    viewer3D.CreateMesh( piece.IndexBuffer.Faces, piece.VertexBuffer.Vertices, piece.VertexBuffer.Normals );
+                                    viewer3D.CreateMesh( piece.IndexBuffer.Faces, piece.VertexBuffer.Vertices, piece.VertexBuffer.Normals, 
+                                        piece.BoundingBox.VertexMin, piece.BoundingBox.VertexMax , piece.BoundingBox.Origin );
                                 }
                             }
                         }

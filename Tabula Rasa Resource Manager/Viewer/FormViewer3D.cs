@@ -50,7 +50,7 @@ namespace TRRM.Viewer
         }
 
 
-        public void CreateMesh( List<Face> faces, List<Vertex> vertices, List<Vertex> normals )
+        public void CreateMesh( List<Face> faces, List<Vertex> vertices, List<Vertex> normals, Vertex vMin, Vertex vMax, Vertex origin )
         {
             lock ( d3dLock )
             {
@@ -59,6 +59,8 @@ namespace TRRM.Viewer
                 mesh.CreateVertexBuffer( vertices, normals );
                 mesh.CreateVertexDeclaration();
                 mesh.Ready = true;
+
+                mesh.CreateBoundingBox( vMin, vMax, origin );
 
                 meshes.Add( mesh );
             }
@@ -101,9 +103,9 @@ namespace TRRM.Viewer
                 {
                     if ( mesh.Ready )
                     {
-                        float radians = 0.01f * ( (float)Math.PI / 180.0f );
+                        float radians = 0.01047197551f * ( (float)Math.PI / 180.0f );
                         mesh.Rotation = Matrix.Multiply( mesh.Rotation, Matrix.RotationAxis( Vector3.Up, radians ) );
-                        mesh.Draw( Device );
+                        mesh.Draw();
                     }
                 }
 
