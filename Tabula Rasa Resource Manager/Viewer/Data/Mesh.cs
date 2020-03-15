@@ -31,7 +31,7 @@ namespace TRRM.Viewer.Data
         private Int32 vertexCount;
 
         // bounding box
-        private BoundingBoxMesh boundingBox;
+        public BoundingBoxMesh BoundingBox;
 
         // textures
         private D3D9.Texture diffuseTexture;
@@ -39,17 +39,38 @@ namespace TRRM.Viewer.Data
         private D3D9.Texture glowTexture;
 
         // matrices
-        public Matrix Position { get; set; }
-        private Matrix rotation;
-        public Matrix Rotation {
-            get { return rotation; }
-            set { rotation = value; if ( boundingBox != null ) { boundingBox.Rotation = value; } }
+        private Matrix origin;
+        public Matrix Origin
+        {
+            get { return origin; }
+            set { origin = value; if ( BoundingBox != null ) { BoundingBox.Origin = value; } }
         }
-        public Matrix Scale { get; set; }
+
+        private Matrix position;
+        public Matrix Position
+        {
+            get { return position; }
+            set { position = value; if ( BoundingBox != null ) { BoundingBox.Position = value; } }
+        }
+
+        private Matrix rotation;
+        public Matrix Rotation
+        {
+            get { return rotation; }
+            set { rotation = value; if ( BoundingBox != null ) { BoundingBox.Rotation = value; } }
+        }
+
+        private Matrix scale;
+        public Matrix Scale
+        {
+            get { return scale; }
+            set { scale = value; if ( BoundingBox != null ) { BoundingBox.Scale = value; } }
+        }
 
         public Mesh( D3D9.Device device )
         {
             this.device = device;
+            Origin = Matrix.Identity;
             Position = Matrix.Identity;
             Rotation = Matrix.Identity;
             Scale = Matrix.Identity;
@@ -121,13 +142,15 @@ namespace TRRM.Viewer.Data
 
         public void CreateBoundingBox( Vertex vMin, Vertex vMax, Vertex origin )
         {
-            boundingBox = new BoundingBoxMesh( device );
-            boundingBox.Create( vMin, vMax, origin );
+            BoundingBox = new BoundingBoxMesh( device );
+            BoundingBox.Create( new Vector3( vMin.X, vMin.Y, vMin.Z ), new Vector3( vMax.X, vMax.Y, vMax.Z ), new Vector3( origin.X, origin.Y, origin.Z ) );
         }
 
         public void Draw()
         {
-            Matrix WorldMatrix = Matrix.Multiply( Matrix.Multiply(Rotation, Position), Scale );
+            Matrix corrected = Matrix.Multiply( Origin, Rotation );
+            Matrix positioned = Matrix.Multiply( corrected, Position );
+            Matrix WorldMatrix = Matrix.Multiply( positioned, Scale );
             device.SetTransform( D3D9.TransformState.World, WorldMatrix );
 
             device.SetStreamSource( 0, vertexBuffer, 0, vertexDeclStride );
@@ -138,9 +161,9 @@ namespace TRRM.Viewer.Data
             // restore matrix
             device.SetTransform( D3D9.TransformState.World, Matrix.Identity );
 
-            if ( boundingBox != null && boundingBox.Ready )
+            if ( BoundingBox != null && BoundingBox.Ready )
             {
-                boundingBox.Draw();
+                BoundingBox.Draw();
             }
         }
     }

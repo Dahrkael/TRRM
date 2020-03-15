@@ -1,4 +1,5 @@
 ﻿using SharpDX;
+using SharpDX.Mathematics.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,13 +25,20 @@ namespace TRRM.Viewer.Data
         private Int32 vertexCount;
 
         // matrices
+        public Matrix Origin { get; set; }
         public Matrix Position { get; set; }
         public Matrix Rotation { get; set; }
         public Matrix Scale { get; set; }
 
+        // bb info
+        // FIXME: take origin into account
+        public Vector3 VMin { get; set; }
+        public Vector3 VMax { get; set; }
+
         public BoundingBoxMesh( D3D9.Device device )
         {
             this.device = device;
+            Origin = Matrix.Identity;
             Position = Matrix.Identity;
             Rotation = Matrix.Identity;
             Scale = Matrix.Identity;
@@ -58,9 +66,12 @@ namespace TRRM.Viewer.Data
             vertexDeclStride = 16 + 16;
         }
 
-        public void Create( Vertex vMin, Vertex vMax, Vertex origin )
-        {
-            Vector4 color = new Vector4( 1.0f, 1.0f, 1.0f, 1.0f );
+        public void Create( Vector3 vMin, Vector3 vMax, Vector3 origin )
+        { 
+            VMin = vMin;
+            VMax = vMax;
+
+            Vector4 color = new Vector4( 0.0f, 1.0f, 0.0f, 1.0f );
 
             // create vertices
 
@@ -110,7 +121,15 @@ namespace TRRM.Viewer.Data
 
         public void Draw()
         {
-            Matrix WorldMatrix = Matrix.Multiply( Matrix.Multiply( Rotation, Position ), Scale );
+            D3D9.Material currentMaterial = device.Material;
+
+            D3D9.Material material = new D3D9.Material();
+            material.Ambient = new RawColor4( 0.0f, 1.0f, 0.0f, 1.0f );
+            device.Material = material;
+
+            Matrix corrected = Matrix.Multiply( Origin, Rotation );
+            Matrix positioned = Matrix.Multiply( corrected, Position );
+            Matrix WorldMatrix = Matrix.Multiply( positioned, Scale );
             device.SetTransform( D3D9.TransformState.World, WorldMatrix );
 
             device.SetStreamSource( 0, vertexBuffer, 0, vertexDeclStride );
@@ -118,8 +137,9 @@ namespace TRRM.Viewer.Data
             device.Indices = indexBuffer;
             device.DrawIndexedPrimitive( D3D9.PrimitiveType.LineList, 0, 0, vertexCount, 0, indexCount / 2 );
 
-            // restore matrix
+            // restore state
             device.SetTransform( D3D9.TransformState.World, Matrix.Identity );
+            device.Material = currentMaterial;
         }
     }
 }
