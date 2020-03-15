@@ -28,11 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.buttonOpen = new System.Windows.Forms.Button();
             this.buttonExtract = new System.Windows.Forms.Button();
             this.saveDialog = new System.Windows.Forms.SaveFileDialog();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btnAll = new System.Windows.Forms.Button();
             this.btnSearch = new System.Windows.Forms.Button();
             this.txtSearch = new System.Windows.Forms.TextBox();
             this.btnTest = new System.Windows.Forms.Button();
@@ -41,7 +41,6 @@
             this.pbPreview = new System.Windows.Forms.PictureBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.chooseFolderDialog = new System.Windows.Forms.FolderBrowserDialog();
-            this.btnAll = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbPreview)).BeginInit();
@@ -83,6 +82,16 @@
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Commands";
+            // 
+            // btnAll
+            // 
+            this.btnAll.Location = new System.Drawing.Point(501, 21);
+            this.btnAll.Name = "btnAll";
+            this.btnAll.Size = new System.Drawing.Size(19, 23);
+            this.btnAll.TabIndex = 9;
+            this.btnAll.Text = "A";
+            this.btnAll.UseVisualStyleBackColor = true;
+            this.btnAll.Click += new System.EventHandler(this.btnAll_Click);
             // 
             // btnSearch
             // 
@@ -165,16 +174,6 @@
             // 
             this.chooseFolderDialog.ShowNewFolderButton = false;
             // 
-            // btnAll
-            // 
-            this.btnAll.Location = new System.Drawing.Point(501, 21);
-            this.btnAll.Name = "btnAll";
-            this.btnAll.Size = new System.Drawing.Size(19, 23);
-            this.btnAll.TabIndex = 9;
-            this.btnAll.Text = "A";
-            this.btnAll.UseVisualStyleBackColor = true;
-            this.btnAll.Click += new System.EventHandler(this.btnAll_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -183,7 +182,6 @@
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "Tabula Rasa Resource Manager";
             this.groupBox1.ResumeLayout(false);

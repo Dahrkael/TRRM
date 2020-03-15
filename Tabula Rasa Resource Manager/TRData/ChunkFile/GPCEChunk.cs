@@ -9,6 +9,10 @@ namespace TRRM
 {
     public class GPCEChunk : Chunk
     {
+        public INDXChunk IndexBuffer;
+        public VERTChunk VertexBuffer;
+        public BBOXChunk BoundingBox;
+
         public override bool Load( BinaryReader reader )
         {
             Start( reader );
@@ -28,16 +32,16 @@ namespace TRRM
                 return false;
             }
             // indices
-            INDXChunk indexBuffer = new INDXChunk();
-            if ( !indexBuffer.Load( reader ) )
+            IndexBuffer = new INDXChunk();
+            if ( !IndexBuffer.Load( reader ) )
             {
                 return false;
             }
             // vertices
             if ( Header.Version >= 10 )
             {
-                VERTChunk vertexBuffer = new VERTChunk();
-                if ( !vertexBuffer.Load( reader ) )
+                VertexBuffer = new VERTChunk();
+                if ( !VertexBuffer.Load( reader ) )
                 {
                     return false;
                 }
@@ -49,8 +53,8 @@ namespace TRRM
                 if ( unk0 == 2 )
                 {
                     Debugger.Break();
-                    VERTChunk vertexBuffer1 = new VERTChunk();
-                    if ( !vertexBuffer1.Load( reader ) )
+                    VertexBuffer = new VERTChunk();
+                    if ( !VertexBuffer.Load( reader ) )
                     {
                         return false;
                     }
@@ -62,16 +66,16 @@ namespace TRRM
                 }
                 else
                 {
-                    VERTChunk vertexBuffer = new VERTChunk();
-                    if ( !vertexBuffer.Load( reader ) )
+                    VertexBuffer = new VERTChunk();
+                    if ( !VertexBuffer.Load( reader ) )
                     {
                         return false;
                     }
                 }
             }
             // bounding box
-            BBOXChunk boundingBox = new BBOXChunk();
-            if ( !boundingBox.Load( reader ) )
+            BoundingBox = new BBOXChunk();
+            if ( !BoundingBox.Load( reader ) )
             {
                 return false;
             }
@@ -103,9 +107,10 @@ namespace TRRM
                 Int32 count = reader.ReadInt32();
                 for ( Int32 i = 0; i < count; i++ )
                 {
+                    Debugger.Break();
                     // index buffer
                     INDXChunk indices = new INDXChunk();
-                    if ( !indexBuffer.Load( reader ) )
+                    if ( !indices.Load( reader ) )
                     {
                         return false;
                     }

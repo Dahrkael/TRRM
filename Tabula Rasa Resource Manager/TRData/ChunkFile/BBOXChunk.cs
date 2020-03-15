@@ -8,9 +8,9 @@ namespace TRRM
 {
     public class BBOXChunk : Chunk
     {
-        bool Unknown2;
-        float[,] UnknownMatrix3x3;
-        float Unknown1;
+        public bool Unknown2;
+        public float[,] UnknownMatrix3x3;
+        public float Unknown1;
 
         public override bool Load( BinaryReader reader )
         {

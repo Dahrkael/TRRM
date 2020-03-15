@@ -8,7 +8,7 @@ namespace TRRM
 {
     public class GSKNChunk : Chunk
     {
-        GPCEChunk Geometry;
+        public GPCEChunk Geometry;
 
         public override bool Load( BinaryReader reader )
         {

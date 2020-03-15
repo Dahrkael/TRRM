@@ -9,13 +9,15 @@ namespace TRRM
 {
     public class VERTChunk : Chunk
     {
-        DECLChunk VertexDeclarations;
-        List<Vertex> Vertices;
-        List<UV> UVs;
+        public DECLChunk VertexDeclarations;
+        public List<Vertex> Vertices;
+        public List<Vertex> Normals;
+        public List<UV> UVs;
 
         public override bool Load( BinaryReader reader )
         {
             Vertices = new List<Vertex>();
+            Normals = new List<Vertex>();
             UVs = new List<UV>();
 
             Start( reader );
@@ -47,6 +49,10 @@ namespace TRRM
                         case VertexDeclUsage.Position:
                             Vertex vertex = reader.ReadVertex();
                             Vertices.Add( vertex );
+                            break;
+                        case VertexDeclUsage.Normal:
+                            Vertex normal = reader.ReadVertex();
+                            Normals.Add( normal );
                             break;
                         case VertexDeclUsage.TextureCoordinate:
                             UV uv = reader.ReadUV();

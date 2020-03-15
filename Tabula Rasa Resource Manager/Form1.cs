@@ -16,16 +16,21 @@ namespace TRRM
     public partial class Form1 : Form
     {
         TRData trData = null;
+        Viewer.FormViewer3D viewer3D = null;
 
         public Form1()
         {
             InitializeComponent();
+            Icon = TRRM.Properties.Resources.IconTR;
 
             string dataFolder;
             if ( Program.Arguments.TryGetValue( "data", out dataFolder ) )
             {
                 loadTRData( dataFolder );
             }
+
+            viewer3D = new Viewer.FormViewer3D();
+            viewer3D.Show();
         }
 
         private void buttonOpen_Click( object sender, EventArgs e )
@@ -117,20 +122,29 @@ namespace TRRM
                         ChunkFile chunkie = new ChunkFile();
                         if ( chunkie.Load( memory ) )
                         {
-                            MessageBox.Show( "SUCCESS" );
-                            /*
-                            saveDialog.FileName = System.IO.Path.GetFileName( file.Filename ) + ".unpacked";
-                            DialogResult ret = saveDialog.ShowDialog();
-                            if ( ( ret == DialogResult.OK ) && ( saveDialog.FileName != "" ) )
+                            //MessageBox.Show( "SUCCESS" );
+
+                            
+                            GBODChunk gbod = chunkie.Chunks[ 0 ] as GBODChunk;
+                            foreach ( var child in gbod.Children )
                             {
-                                ChunkFile
-                                using ( BinaryWriter writer = new BinaryWriter( File.Open( saveDialog.FileName, FileMode.Create, FileAccess.Write ) ) )
+                                GPCEChunk piece = null;
+
+                                if ( child is GSKNChunk )
                                 {
-                                    writer.Write( buffer );
+                                    piece = (child as GSKNChunk).Geometry;
                                 }
-                                MessageBox.Show( "Resource extracted!" );
+
+                                if ( child is GPCEChunk )
+                                {
+                                    piece = child as GPCEChunk;
+                                }
+
+                                if ( piece != null )
+                                {
+                                    viewer3D.CreateMesh( piece.IndexBuffer.Faces, piece.VertexBuffer.Vertices, piece.VertexBuffer.Normals );
+                                }
                             }
-                            */
                         }
                         else
                         {

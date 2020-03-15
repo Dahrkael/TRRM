@@ -8,8 +8,8 @@ namespace TRRM
 {
     public class INDXChunk : Chunk
     {
-        Int32 FaceCount;
-        List<Face> Faces;
+        public Int32 FaceCount;
+        public List<Face> Faces;
 
         public override bool Load( BinaryReader reader )
         {

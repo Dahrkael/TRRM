@@ -6,7 +6,7 @@ using System.Text;
 
 namespace TRRM
 {
-    [StructLayout( LayoutKind.Sequential )]
+    [StructLayout( LayoutKind.Sequential, Pack = 4 )]
     public struct Vertex
     {
         public float X;
@@ -19,9 +19,21 @@ namespace TRRM
             Y = y;
             Z = z;
         }
+
+        public byte[] AsBytes()
+        {
+            byte[] data = new byte[ Size ];
+            Array.Copy( BitConverter.GetBytes( X ), 0, data, 0, sizeof( float ) );
+            Array.Copy( BitConverter.GetBytes( Y ), 0, data, sizeof( float ), sizeof( float ) );
+            Array.Copy( BitConverter.GetBytes( Z ), 0, data, sizeof( float ) * 2, sizeof( float ) );
+
+            return data;
+        }
+
+        public const Int32 Size = sizeof( float ) * 3;
     }
 
-    [StructLayout( LayoutKind.Sequential )]
+    [StructLayout( LayoutKind.Sequential, Pack = 4 )]
     public struct Face
     {
         public UInt16 A;
@@ -34,9 +46,21 @@ namespace TRRM
             B = b;
             C = c;
         }
+
+        public byte[] AsBytes()
+        {
+            byte[] data = new byte[ Size ];
+            Array.Copy( BitConverter.GetBytes( A ), 0, data, 0, sizeof( ushort ) );
+            Array.Copy( BitConverter.GetBytes( B ), 0, data, sizeof( ushort ), sizeof( ushort ) );
+            Array.Copy( BitConverter.GetBytes( C ), 0, data, sizeof( ushort ) * 2, sizeof( ushort ) );
+
+            return data;
+        }
+
+        public const Int32 Size = sizeof( ushort ) * 3;
     }
 
-    [StructLayout( LayoutKind.Sequential )]
+    [StructLayout( LayoutKind.Sequential, Pack = 4 )]
     public struct UV
     {
         public float U;
@@ -47,6 +71,17 @@ namespace TRRM
             U = u;
             V = v;
         }
+
+        public byte[] AsBytes()
+        {
+            byte[] data = new byte[ Size ];
+            Array.Copy( BitConverter.GetBytes( U ), 0, data, 0, sizeof( float ) );
+            Array.Copy( BitConverter.GetBytes( V ), 0, data, sizeof( float ), sizeof( float ) );
+
+            return data;
+        }
+
+        public const Int32 Size = sizeof( float ) * 2;
     }
 
     public enum VertexDeclType : byte
