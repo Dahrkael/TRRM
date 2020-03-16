@@ -10,6 +10,7 @@ using System.IO;
 using KUtility;
 using Paloma;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace TRRM
 {
@@ -216,6 +217,49 @@ namespace TRRM
         private void btnAll_Click( object sender, EventArgs e )
         {
             viewer3D.CreateTestCube();
+        }
+
+        private void btnTestPARM_Click( object sender, EventArgs e )
+        {
+            HashSet<uint> versions = new HashSet<uint>();
+            DateTime start = DateTime.Now;
+            foreach( PackedFile file in trData.Filesystem.Values )
+            {
+                if ( file.GetFileType() == TRFileType.GEO )
+                {
+                    using ( MemoryStream memory = new MemoryStream( file.GetContents() ) )
+                    {
+                        ChunkFile chunkie = new ChunkFile();
+                        if ( chunkie.Load( memory ) && chunkie.Chunks.Count > 0 )
+                        {
+                            GBODChunk gbod = chunkie.Chunks[ 0 ] as GBODChunk;
+                            foreach ( var child in gbod.Children )
+                            {
+                                GPCEChunk piece = null;
+
+                                if ( child is GSKNChunk )
+                                {
+                                    piece = ( child as GSKNChunk ).Geometry;
+                                }
+
+                                if ( child is GPCEChunk )
+                                {
+                                    piece = child as GPCEChunk;
+                                }
+
+                                if ( piece != null )
+                                {
+                                    piece.Effect.parms.ForEach( p => versions.Add( p.Header.Version ) );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            DateTime end = DateTime.Now;
+            Console.WriteLine( "Operation took {0}", (end - start).ToString() );
+            versions.ToList().ForEach( v => Console.WriteLine( "used v {0}", v ) );
+            MessageBox.Show( "FINISHED" );
         }
     }
 }

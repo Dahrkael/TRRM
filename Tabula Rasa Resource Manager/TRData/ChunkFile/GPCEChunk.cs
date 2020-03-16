@@ -9,9 +9,11 @@ namespace TRRM
 {
     public class GPCEChunk : Chunk
     {
+        public EFCTChunk Effect;
         public INDXChunk IndexBuffer;
         public VERTChunk VertexBuffer;
         public BBOXChunk BoundingBox;
+        public USDAChunk USDA;
 
         public override bool Load( BinaryReader reader )
         {
@@ -26,8 +28,8 @@ namespace TRRM
                 bool hasMaterial = reader.ReadBoolean();
             }
 
-            EFCTChunk effect = new EFCTChunk();
-            if ( !effect.Load( reader ) )
+            Effect = new EFCTChunk();
+            if ( !Effect.Load( reader ) )
             {
                 return false;
             }
@@ -87,8 +89,8 @@ namespace TRRM
             ChunkType nextChunk = ChunkUtils.PeekNextChunk( reader );
             if ( nextChunk == ChunkType.gfxUSDA )
             {
-                USDAChunk usda = new USDAChunk();
-                if ( !usda.Load( reader ) )
+                USDA = new USDAChunk();
+                if ( !USDA.Load( reader ) )
                 {
                     return false;
                 }
@@ -107,7 +109,7 @@ namespace TRRM
                 Int32 count = reader.ReadInt32();
                 for ( Int32 i = 0; i < count; i++ )
                 {
-                    Debugger.Break();
+                    //Debugger.Break();
                     // index buffer
                     INDXChunk indices = new INDXChunk();
                     if ( !indices.Load( reader ) )

@@ -101,6 +101,7 @@
     <Compile Include="TRData\ChunkFile\PSKEChunk.cs" />
     <Compile Include="TRData\ChunkFile\USDAChunk.cs" />
     <Compile Include="TRData\ChunkFile\VERTChunk.cs" />
+    <Compile Include="TRData\FastConsole.cs" />
     <Compile Include="Viewer\Data\BoundingBoxMesh.cs" />
     <Compile Include="Viewer\Data\Mesh.cs" />
     <Compile Include="Viewer\DDSImage.cs" />

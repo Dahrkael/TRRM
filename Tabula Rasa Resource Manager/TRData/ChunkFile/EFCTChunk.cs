@@ -9,8 +9,8 @@ namespace TRRM
 {
     public class EFCTChunk : Chunk
     {
-        assIDChunk assID;
-        List<PARMChunk> parms;
+        public assIDChunk assID;
+        public List<PARMChunk> parms;
 
         public override bool Load( BinaryReader reader )
         {

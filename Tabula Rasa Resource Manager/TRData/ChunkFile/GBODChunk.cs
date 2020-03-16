@@ -30,7 +30,7 @@ namespace TRRM
             if ( Header.Version == 3 )
             {
                 Unknown1 = reader.ReadSingle();
-                Console.WriteLine( "GBOD: unk1 {0}", Unknown1 );
+                FastConsole.WriteLine( "unk1" + Unknown1 );
             }
 
             // bounding box

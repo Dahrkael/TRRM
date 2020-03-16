@@ -186,7 +186,7 @@ namespace TRRM
             ChunkType type = ChunkUtils.Type( tag );
             if ( type == ChunkType.None )
             {
-                Console.WriteLine( "Next chunk: {0} ({1})", type, tag );
+                FastConsole.WriteLine( String.Format( "Next chunk: {0} ({1})", type, tag ) );
             }
             return type;
         }
@@ -223,7 +223,7 @@ namespace TRRM
             string tag = ChunkUtils.Tag( Type() );
             if ( Header.Tag != tag )
             {
-                Console.WriteLine( "{0}: Invalid tag.", tag );
+                FastConsole.WriteLine( String.Format( "{0}: Invalid tag.", tag ) );
                 return false;
             }
 
@@ -232,7 +232,7 @@ namespace TRRM
                 Debugger.Break();
             }
 
-            Console.WriteLine( "[{0}] Version {1} ", Header.Tag, Header.Version );
+            FastConsole.WriteLine( String.Format( "[{0}] Version {1} ", Header.Tag, Header.Version ) );
             return true;
         }
 
@@ -247,7 +247,7 @@ namespace TRRM
             }
 
             string tag = ChunkUtils.Tag( Type() );
-            Console.WriteLine( "{0}{1}: Invalid version.", tag, "Chunk" );
+            FastConsole.WriteLine( String.Format( "{0}{1}: Invalid version.", tag, "Chunk" ) );
             return false;
         }
 
@@ -278,7 +278,7 @@ namespace TRRM
             for ( int i = 0; i < data.Length; i++ )
             {
                 string tag = ChunkUtils.Tag( Type() );
-                Console.WriteLine( "{0}: {1}", tag, data[i] );
+                FastConsole.WriteLine( String.Format( "{0}: {1}", tag, data[ i ] ) );
             }
         }
     }

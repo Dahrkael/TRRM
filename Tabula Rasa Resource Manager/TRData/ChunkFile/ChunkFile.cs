@@ -40,6 +40,7 @@ namespace TRRM
             {
                 if ( !ReadHeader( reader ) )
                 {
+                    FastConsole.Flush();
                     return false;
                 }
 
@@ -49,6 +50,7 @@ namespace TRRM
                     Chunk masterChunk = ChunkUtils.Instance( chunkType );
                     if ( !masterChunk.Load( reader ) )
                     {
+                        FastConsole.Flush();
                         return false;
                     }
 
@@ -57,6 +59,7 @@ namespace TRRM
                 }
             }
 
+            FastConsole.Flush();
             return true;
         }
 
@@ -82,18 +85,21 @@ namespace TRRM
 
             if ( !header.Valid() )
             {
-                Console.WriteLine( "ChunkFile: Header is not valid." );
-                if ( header.Type == 'T' )
-                {
-                    Console.WriteLine( "ChunkFile: Text format not supported." );
-                }
+                FastConsole.WriteLine( "ChunkFile: Header is not valid." );
                 return false;
             }
+
+            if ( header.Type == 'T' )
+            {
+                FastConsole.WriteLine( "ChunkFile: Text format not supported." );
+                return false;
+            }
+            
 
             if ( headerOffset > 0 )
             {
                 // GLM Pack File
-                Console.WriteLine( "This Chunk file is a pack. Use GLMFile class to load it." );
+                FastConsole.WriteLine( "This Chunk file is a pack. Use GLMFile class to load it." );
                 return false;
             }
 

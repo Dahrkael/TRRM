@@ -1,67 +1,96 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace TRRM
 {
+    public enum ParamType : Int32
+    {
+        Bool = 1,
+        Integer = 2,
+        Vector = 3,
+        String = 4,
+        assID = 5,
+        assID2 = 8
+    }
+
     public class PARMChunk : Chunk
     {
         public string Key;
-        assIDChunk Value;
+        public List<object> Values;
+        public ParamType ValueType;
 
         public override bool Load( BinaryReader reader )
         {
+            Values = new List<object>();
+
             Start( reader );
-            if ( !ReadHeader( reader ) || !IsValidVersion( 1, 2, 3, 4, 5, 7, 8, 9 ) )
+            if ( !ReadHeader( reader ) || !IsValidVersion( 1, 2 ) )
             {
                 return false;
             }
 
             Key = reader.ReadCString();
-            LogInfo( "key: " + Key );
-            Int32 unk1 = reader.ReadInt32();
+            ValueType = (ParamType)reader.ReadInt32();
 
+            // there seems to be no other versions than 2 in the files
             switch ( Header.Version )
             {
-                case 1:
-                    reader.ReadInt32();
-                    break;
                 case 2:
-                    if ( unk1 == 5 )
+                    switch( ValueType )
                     {
-                        Value = new assIDChunk();
-                        if ( !Value.Load( reader ) )
-                        {
-                            return false;
-                        }
+                        case ParamType.Bool:
+                            {
+                                bool value = reader.ReadUInt32() == 1 ? true : false;
+                                Values.Add( value );
+                            }
+                            break;
+                        case ParamType.Integer:
+                            {
+                                Int32 value = reader.ReadInt32();
+                                Values.Add( value );
+                            }
+                            break;
+                        case ParamType.Vector:
+                            {
+                                Int32 count = reader.ReadInt32();
+                                for(Int32 i = 0; i < count; i++ )
+                                {
+                                    Values.Add( reader.ReadSingle() );
+                                }
+                            }
+                            break;
+                        case ParamType.String:
+                            {
+                                string value = reader.ReadCString();
+                                Values.Add( value );
+                            }
+                            break;
+                        case ParamType.assID:
+                        case ParamType.assID2:
+                            {
+                                assIDChunk value = new assIDChunk();
+                                if ( !value.Load( reader ) )
+                                {
+                                    return false;
+                                }
+                                Values.Add( value );
+                            }
+                            break;
+                        default:
+                            Debugger.Break();
+                            break;
                     }
                     break;
-                case 3:
-                    reader.ReadInt32();
-                    break;
-                case 4:
-                    reader.ReadCString();
-                    break;
-                case 5:
-                case 7:
-                case 8:
-                case 9:
-                    /*
-                    if ( something == 2 )
-                    {
-                        // assID
-                    }
-                    else
-                    {
-                        reader.ReadCString();
-                    }
-                    */
+                default:
+                    Debugger.Break();
                     break;
             }
 
-            Skip( reader );
+            LogInfo( "key: " + Key + " values count: " + Values.Count );
 
             End( reader );
             return true;
