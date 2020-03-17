@@ -20,7 +20,7 @@ namespace TRRM.Viewer.Data
     {
         public bool Ready { get; set; }
 
-        protected D3D9.Device device;
+        protected DX DX;
 
         public D3D9.VertexDeclaration VertexDecl { get; protected set; }
         public Int32 VertexDeclStride { get; protected set; }
@@ -44,9 +44,9 @@ namespace TRRM.Viewer.Data
         public Matrix Rotation { get; set; }
         public Matrix Scale { get; set; }
 
-        public Mesh( D3D9.Device device )
+        public Mesh( DX dx )
         {
-            this.device = device;
+            this.DX = dx;
             Origin = Matrix.Identity;
             Position = Matrix.Identity;
             Rotation = Matrix.Identity;
@@ -82,14 +82,18 @@ namespace TRRM.Viewer.Data
                 normals = ComputeNormals( vertices, faces );
             CreateVertexBuffer( vertices, normals );
             CreateVertexDeclaration();
+
+            Ready = true;
         }
 
         public virtual void CreateIndexBuffer( List<Face> faces )
         {
-            IndexBuffer = new D3D9.IndexBuffer( device, faces.Count * Face.Size, D3D9.Usage.WriteOnly, D3D9.Pool.Managed, true );
-            IndexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( faces.ToArray() );
-            IndexBuffer.Unlock();
-
+            lock ( DX.GlobalLock )
+            {
+                IndexBuffer = new D3D9.IndexBuffer( DX.Device, faces.Count * Face.Size, D3D9.Usage.WriteOnly, D3D9.Pool.Managed, true );
+                IndexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( faces.ToArray() );
+                IndexBuffer.Unlock();
+            }
             IndexCount = faces.Count * 3;
         }
 
@@ -107,29 +111,38 @@ namespace TRRM.Viewer.Data
                 data[ i ] = vertex;
             }
 
-            VertexBuffer = new D3D9.VertexBuffer( device, vertices.Count * 28, D3D9.Usage.WriteOnly, D3D9.VertexFormat.None, D3D9.Pool.Managed );
-            VertexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( data );
-            VertexBuffer.Unlock();
-
+            lock ( DX.GlobalLock )
+            {
+                VertexBuffer = new D3D9.VertexBuffer( DX.Device, vertices.Count * 28, D3D9.Usage.WriteOnly, D3D9.VertexFormat.None, D3D9.Pool.Managed );
+                VertexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( data );
+                VertexBuffer.Unlock();
+            }
             VertexCount = vertices.Count;
         }
 
         public virtual void CreateVertexDeclaration()
         {
-            var vertexElems = new[] {
-                new D3D9.VertexElement(0, 0, D3D9.DeclarationType.Float3, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Position, 0),
-                new D3D9.VertexElement(0, 12, D3D9.DeclarationType.Float3, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Normal, 0),
-                new D3D9.VertexElement(0, 24, D3D9.DeclarationType.Color, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Color, 0),
-                D3D9.VertexElement.VertexDeclarationEnd
-            };
+            lock ( DX.GlobalLock )
+            {
+                var vertexElems = new[] 
+                {
+                    new D3D9.VertexElement(0, 0, D3D9.DeclarationType.Float3, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Position, 0),
+                    new D3D9.VertexElement(0, 12, D3D9.DeclarationType.Float3, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Normal, 0),
+                    new D3D9.VertexElement(0, 24, D3D9.DeclarationType.Color, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Color, 0),
+                    D3D9.VertexElement.VertexDeclarationEnd
+                };
 
-            VertexDecl = new D3D9.VertexDeclaration( device, vertexElems );
+                VertexDecl = new D3D9.VertexDeclaration( DX.Device, vertexElems );
+            }
             VertexDeclStride = 28;
         }
 
         public void LoadDiffuseTexture( byte[] data )
         {
-            diffuseTexture = D3D9.Texture.FromMemory( device, data, D3D9.Usage.WriteOnly, D3D9.Pool.Managed );
+            lock ( DX.GlobalLock )
+            {
+                diffuseTexture = D3D9.Texture.FromMemory( DX.Device, data, D3D9.Usage.WriteOnly, D3D9.Pool.Managed );
+            }
         }
         /*
         public void CreateBoundingBox( Vertex vMin, Vertex vMax, Vertex origin )

@@ -104,7 +104,7 @@
     <Compile Include="TRData\FastConsole.cs" />
     <Compile Include="Viewer\Data\BoundingBoxMesh.cs" />
     <Compile Include="Viewer\Data\Mesh.cs" />
-    <Compile Include="Viewer\Data\ModelCreator.cs" />
+    <Compile Include="Viewer\ModelCreator.cs" />
     <Compile Include="TRData\ExtensionMethods.cs" />
     <Compile Include="TRData\GLMFile.cs" />
     <Compile Include="Viewer\Data\DefaultShader.cs" />

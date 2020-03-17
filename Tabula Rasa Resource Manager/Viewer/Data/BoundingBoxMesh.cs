@@ -22,8 +22,8 @@ namespace TRRM.Viewer.Data
         public Vector3 VMin { get; set; }
         public Vector3 VMax { get; set; }
 
-        public BoundingBoxMesh( D3D9.Device device )
-            : base( device )
+        public BoundingBoxMesh( DX dx )
+            : base( dx )
         {
             Primitive = D3D9.PrimitiveType.LineList;
         }
@@ -48,10 +48,12 @@ namespace TRRM.Viewer.Data
                 indices[ i++ ] = n + 4;
             }
 
-            IndexBuffer = new D3D9.IndexBuffer( device, sizeof( int ) * 24, D3D9.Usage.WriteOnly, D3D9.Pool.Managed, false );
-            IndexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( indices );
-            IndexBuffer.Unlock();
-
+            lock ( DX.GlobalLock )
+            {
+                IndexBuffer = new D3D9.IndexBuffer( DX.Device, sizeof( int ) * 24, D3D9.Usage.WriteOnly, D3D9.Pool.Managed, false );
+                IndexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( indices );
+                IndexBuffer.Unlock();
+            }
             IndexCount = indices.Length;
         }
 
@@ -62,13 +64,17 @@ namespace TRRM.Viewer.Data
 
         public override void CreateVertexDeclaration()
         {
-            var vertexElems = new[] {
-                new D3D9.VertexElement(0, 0, D3D9.DeclarationType.Float3, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Position, 0),
-                new D3D9.VertexElement(0, 12, D3D9.DeclarationType.Color, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Color, 0),
-                D3D9.VertexElement.VertexDeclarationEnd
-            };
+            lock ( DX.GlobalLock )
+            {
+                var vertexElems = new[] 
+                {
+                    new D3D9.VertexElement(0, 0, D3D9.DeclarationType.Float3, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Position, 0),
+                    new D3D9.VertexElement(0, 12, D3D9.DeclarationType.Color, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Color, 0),
+                    D3D9.VertexElement.VertexDeclarationEnd
+                };
 
-            VertexDecl = new D3D9.VertexDeclaration( device, vertexElems );
+                VertexDecl = new D3D9.VertexDeclaration( DX.Device, vertexElems );
+            }
             VertexDeclStride = 16;
         }
 
@@ -92,11 +98,13 @@ namespace TRRM.Viewer.Data
                 new BBVertex() { Position = new Vector3( vMax.X, vMax.Y, vMax.Z ), Color = color },
                 new BBVertex() { Position = new Vector3( vMin.X, vMax.Y, vMax.Z ), Color = color }
             };
-            
-            VertexBuffer = new D3D9.VertexBuffer( device, vertices.Length * 16, D3D9.Usage.WriteOnly, D3D9.VertexFormat.None, D3D9.Pool.Managed );
-            VertexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( vertices );
-            VertexBuffer.Unlock();
 
+            lock ( DX.GlobalLock )
+            {
+                VertexBuffer = new D3D9.VertexBuffer( DX.Device, vertices.Length * 16, D3D9.Usage.WriteOnly, D3D9.VertexFormat.None, D3D9.Pool.Managed );
+                VertexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( vertices );
+                VertexBuffer.Unlock();
+            }
             VertexCount = vertices.Length;
 
             //create indices

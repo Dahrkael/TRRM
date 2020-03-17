@@ -229,34 +229,14 @@ namespace TRRM
             if ( geoFile.GetFileType() != TRFileType.GEO )
                 return;
 
-            viewer3D.ClearDisplay();
-
             using ( MemoryStream memory = new MemoryStream( geoFile.GetContents() ) )
             {
                 ChunkFile chunkie = new ChunkFile();
                 if ( chunkie.Load( memory ) )
                 {
                     GBODChunk gbod = chunkie.Chunks[ 0 ] as GBODChunk;
-                    foreach ( var child in gbod.Children )
-                    {
-                        GPCEChunk piece = null;
-
-                        if ( child is GSKNChunk )
-                        {
-                            piece = ( child as GSKNChunk ).Geometry;
-                        }
-
-                        if ( child is GPCEChunk )
-                        {
-                            piece = child as GPCEChunk;
-                        }
-
-                        if ( piece != null )
-                        {
-                            viewer3D.CreateMesh( piece.IndexBuffer.Faces, piece.VertexBuffer.Vertices, piece.VertexBuffer.Normals,
-                                piece.BoundingBox.VertexMin, piece.BoundingBox.VertexMax, piece.BoundingBox.Origin );
-                        }
-                    }
+                    var meshes = Viewer.ModelCreator.Generate( gbod, viewer3D.DX );
+                    viewer3D.DisplayMeshes( meshes );
                 }
                 else
                 {
