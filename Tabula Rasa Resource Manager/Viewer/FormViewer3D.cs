@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-
+using System.Windows.Forms;
 using SharpDX;
 using SharpDX.Mathematics;
 using SharpDX.Mathematics.Interop;
@@ -13,11 +13,24 @@ using D3D9 = SharpDX.Direct3D9;
 
 namespace TRRM.Viewer
 {
-    [StructLayout( LayoutKind.Sequential )]
-    struct ExampleVertex
+    class EffectBlock : IDisposable
     {
-        public Vector3 Position;
-        public SharpDX.ColorBGRA Color;
+        public D3D9.Effect Effect { get; set; }
+
+        public EffectBlock( D3D9.Effect effect )
+        {
+            Effect = effect;
+
+            Effect.Technique = Effect.GetTechnique( 0 );
+            Effect.Begin();
+            Effect.BeginPass( 0 );
+        }
+
+        public void Dispose()
+        {
+            Effect.EndPass();
+            Effect.End();
+        }
     }
 
     class FormViewer3D : RenderForm
@@ -38,6 +51,7 @@ namespace TRRM.Viewer
         private Data.BoundingBoxMesh testCube;
 
         private D3D9.Effect basicEffect;
+        private D3D9.Effect lightEffect;
 
         public FormViewer3D()
             : base( "TRRM - 3D Viewer" )
@@ -49,20 +63,28 @@ namespace TRRM.Viewer
             Device = new D3D9.Device( Direct3D, 0, D3D9.DeviceType.Hardware, Handle,
                 D3D9.CreateFlags.HardwareVertexProcessing, new D3D9.PresentParameters( ClientSize.Width, ClientSize.Height ) );
 
+            if ( Device.Capabilities.PixelShaderVersion < new Version(2, 0) ||
+                Device.Capabilities.VertexShaderVersion < new Version( 2, 0 )  )
+            {
+                MessageBox.Show( "This computer doesn't support Vertex and Pixel Shader version 2. Get with the times." );
+                Application.Exit();
+            }
+
             meshes = new List<Data.Mesh>();
             d3dLock = new object();
 
             sprite = new D3D9.Sprite( Device );
             basicEffect = D3D9.Effect.FromString( Device, Data.Shader.Basic, D3D9.ShaderFlags.None );
+            lightEffect = D3D9.Effect.FromString( Device, Data.Shader.Phong, D3D9.ShaderFlags.None );
         }
 
         ~FormViewer3D()
         {
-            if ( texture != null )
-                texture.Dispose();
+            ClearDisplay();
 
             sprite.Dispose();
             basicEffect.Dispose();
+            lightEffect.Dispose();
             Device.Dispose();
             Direct3D.Dispose();
         }
@@ -74,13 +96,33 @@ namespace TRRM.Viewer
             RenderThread.Start();
         }
 
-        public void DisplayTexture( byte[] textureData )
+        public void ClearDisplay()
         {
             lock ( d3dLock )
             {
-                if (texture != null)
-                    texture.Dispose();
+                if ( testCube != null )
+                {
+                    testCube.Dispose();
+                    testCube = null;
+                }
 
+                if ( texture != null )
+                {
+                    texture.Dispose();
+                    texture = null;
+                    spriteTransform = Matrix.Identity;
+                }
+
+                meshes.ForEach( m => m.Dispose() );
+                meshes.Clear();
+            }
+        }
+
+        public void DisplayTexture( byte[] textureData )
+        {
+            ClearDisplay();
+            lock ( d3dLock )
+            {
                 D3D9.ImageInformation textureInfo = D3D9.ImageInformation.FromMemory( textureData );
                 texture = D3D9.Texture.FromMemory( Device, textureData, D3D9.Usage.None, D3D9.Pool.Managed );
 
@@ -108,9 +150,13 @@ namespace TRRM.Viewer
         {
             lock ( d3dLock )
             {
+                List<Vector3> vertices3 = vertices.Select( v => new Vector3( v.X, v.Y, v.Z ) ).ToList();
+                List<Vector3> normals3 = normals == null ? null : normals.Select( n => new Vector3( n.X, n.Y, n.Z ) ).ToList();
+
                 Data.Mesh mesh = new Viewer.Data.Mesh( Device );
+
+                mesh.CreateVertexBuffer( vertices3, normals3 );
                 mesh.CreateIndexBuffer( faces );
-                mesh.CreateVertexBuffer( vertices, normals );
                 mesh.CreateVertexDeclaration();
                 //mesh.CreateBoundingBox( vMin, vMax, origin );
                 mesh.Origin = Matrix.Translation( new Vector3( -origin.X, -origin.Y, -origin.Z ) );
@@ -122,18 +168,11 @@ namespace TRRM.Viewer
 
         public void CreateTestCube()
         {
+            ClearDisplay();
             lock ( d3dLock )
             {
                 testCube = new Data.BoundingBoxMesh( Device );
                 testCube.Create( new Vector3( -5, -5, -5 ), new Vector3( 5, 5, 5 ), new Vector3( 0, 0, 0 ) );
-            }
-        }
-
-        public void RemoveMeshes()
-        {
-            lock( d3dLock )
-            {
-                meshes.Clear();
             }
         }
 
@@ -143,6 +182,11 @@ namespace TRRM.Viewer
             {
                 Device.Clear( D3D9.ClearFlags.Target | D3D9.ClearFlags.ZBuffer, Color.Black, 1.0f, 0 );
                 Device.BeginScene();
+
+                // disable culling because rotation
+                Device.SetRenderState( D3D9.RenderState.CullMode, D3D9.Cull.None );
+                // wireframe is cool
+                //Device.SetRenderState( D3D9.RenderState.FillMode, D3D9.FillMode.Wireframe );
 
                 float maxZ = 50.0f;
                 /*
@@ -155,50 +199,19 @@ namespace TRRM.Viewer
                 }
                 */
 
-                Vector3 EyeVector = new Vector3( 0.0f, 0.0f, -maxZ );
-                Vector3 LookAtVector = new Vector3( 0.0f, 0.0f, 0.0f );
-                Vector3 UpVector = new Vector3( 0.0f, 1.0f, 0.0f );
+                Vector3 eyeVector = new Vector3( 0.0f, 0.0f, -maxZ );
+                Vector3 lookAtVector = new Vector3( 0.0f, 0.0f, 0.0f );
+                Vector3 upVector = new Vector3( 0.0f, 1.0f, 0.0f );
 
-                Matrix ViewMatrix = Matrix.LookAtLH( EyeVector, LookAtVector, UpVector );
-                Matrix ProjectionMatrix = SharpDX.Matrix.PerspectiveFovLH( (float)Math.PI / 4.0f, ClientSize.Width / (float)ClientSize.Height, 1.0f, 1000.0f );
-                Matrix ViewProjMatrix = ViewMatrix * ProjectionMatrix;
-
-                var technique = basicEffect.GetTechnique( 0 );
-                basicEffect.Technique = technique;
-                basicEffect.Begin();
-                basicEffect.BeginPass( 0 );
+                Matrix viewMatrix = Matrix.LookAtLH( eyeVector, lookAtVector, upVector );
+                Matrix projectionMatrix = SharpDX.Matrix.PerspectiveFovLH( (float)Math.PI / 4.0f, ClientSize.Width / (float)ClientSize.Height, 1.0f, 1000.0f );
+                Matrix viewProjMatrix = viewMatrix * projectionMatrix;
 
                 float radians = 0.01047197551f * ( (float)Math.PI / 180.0f );
 
-                if ( testCube != null )
-                {    
-                    testCube.Rotation = testCube.Rotation * Matrix.RotationAxis( Vector3.Up, radians );
-                    drawMesh( ViewProjMatrix, testCube );
-                }
-                else
-                {
-                    if ( texture != null )
-                    {
-                        sprite.Transform = spriteTransform;
-                        sprite.Begin( D3D9.SpriteFlags.AlphaBlend );
-                        sprite.Draw( texture, new RawColorBGRA( 255, 255, 255, 255 ) );
-                        sprite.End();
-                    }
-                    else
-                    {
-                        foreach ( var mesh in meshes )
-                        {
-                            if ( mesh.Ready )
-                            {
-                                mesh.Rotation = Matrix.Multiply( mesh.Rotation, Matrix.RotationAxis( Vector3.Up, radians ) );
-                                drawMesh( ViewProjMatrix, mesh );
-                            }
-                        }
-                    }
-                }
-
-                basicEffect.EndPass();
-                basicEffect.End();
+                drawSprite();
+                drawTestCube( viewProjMatrix, radians );
+                drawMeshes( viewProjMatrix, radians );
 
                 Device.EndScene();
                 Device.Present();
@@ -230,12 +243,61 @@ namespace TRRM.Viewer
             }
         }
 
-        private void drawMesh( Matrix ViewProjMatrix, Data.Mesh mesh )
+        private void drawTestCube( Matrix viewProjMatrix, float radians )
         {
-            Matrix WorldMatrix = mesh.Origin * mesh.Rotation * mesh.Position;
-            Matrix WorldViewProjMatrix = WorldMatrix * ViewProjMatrix;
+            if ( testCube == null )
+                return;
 
-            basicEffect.SetValue( "worldViewProj", WorldViewProjMatrix );
+            using ( EffectBlock effect = new EffectBlock( basicEffect ) )
+            {
+                testCube.Rotation = testCube.Rotation * Matrix.RotationAxis( Vector3.Up, radians );
+                drawMesh( viewProjMatrix, testCube, effect.Effect );
+            }
+        }
+
+        private void drawSprite()
+        {
+            if ( texture == null )
+                return;
+
+            sprite.Transform = spriteTransform;
+            sprite.Begin( D3D9.SpriteFlags.AlphaBlend );
+            sprite.Draw( texture, new RawColorBGRA( 255, 255, 255, 255 ) );
+            sprite.End();
+        }
+
+        private void drawMeshes( Matrix viewProjMatrix, float radians )
+        {
+            if ( meshes.Count == 0 )
+                return;
+
+            using ( EffectBlock effect = new EffectBlock( lightEffect ) )
+            {
+                effect.Effect.SetValue( "gAmbientLight", new Color4( 0.4f, 0.4f, 0.4f, 1.0f ) );
+                effect.Effect.SetValue( "gDiffuseLight", new Color4( 0.5f, 0.5f, 0.5f, 1.0f ) );
+                effect.Effect.SetValue( "gDiffuseVecW", new Vector3( 1.0f, -0.5f, -1.0f ) );
+
+                foreach ( var mesh in meshes )
+                {
+                    if ( mesh.Ready )
+                    {
+                        mesh.Rotation = Matrix.Multiply( mesh.Rotation, Matrix.RotationAxis( Vector3.Up, radians ) );
+                        drawMesh( viewProjMatrix, mesh, effect.Effect );
+                    }
+                }
+            }
+        }
+
+        private void drawMesh( Matrix viewProjMatrix, Data.Mesh mesh, D3D9.Effect effect )
+        {
+            Matrix worldMatrix = mesh.Origin * mesh.Rotation * mesh.Position;
+            Matrix worldViewProjMatrix = worldMatrix * viewProjMatrix;
+
+            Matrix worldInverseTranspose = Matrix.Invert( worldMatrix );
+            worldInverseTranspose = Matrix.Transpose( worldInverseTranspose );
+
+            effect.SetValue( "gWorldViewProj", worldViewProjMatrix );
+            effect.SetValue( "gWorldInvTrans", worldInverseTranspose );
 
             Device.SetStreamSource( 0, mesh.VertexBuffer, 0, mesh.VertexDeclStride );
             Device.VertexDeclaration = mesh.VertexDecl;
@@ -243,6 +305,7 @@ namespace TRRM.Viewer
 
             Int32 primitiveCount = mesh.IndexCount / ( mesh.Primitive == D3D9.PrimitiveType.LineList ? 2 : 3 );
             Device.DrawIndexedPrimitive( mesh.Primitive, 0, 0, mesh.VertexCount, 0, primitiveCount );
+
         }
     }
 }

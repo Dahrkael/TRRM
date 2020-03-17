@@ -55,19 +55,17 @@ namespace TRRM
                 PackedFile file = node.Tag as PackedFile;
                 switch ( file.GetFileType() )
                 {
+                    case TRFileType.GEO:
+                        showGEO( file );
+                        break;
                     case TRFileType.DDS:
                     case TRFileType.TGA:
                     case TRFileType.JPG:
-                        viewer3D.DisplayTexture( file.GetContents() );
+                        showImage( file );
                         break;
-                        /*
-                    case TRFileType.JPG:
-                        using ( MemoryStream stream = new MemoryStream( file.GetContents() ) )
-                        {
-                            pbPreview.Image = new Bitmap( stream );
-                        }
+                    default:
+                        Console.WriteLine("No handling available for {0} files",  file.GetFileType() );
                         break;
-                        */
                 }
             }
         }
@@ -103,45 +101,17 @@ namespace TRRM
             if ( node.Tag is PackedFile )
             {
                 PackedFile file = node.Tag as PackedFile;
-                if ( file.GetFileType() == TRFileType.GEO )
+                using ( MemoryStream memory = new MemoryStream( file.GetContents() ) )
                 {
-                    using ( MemoryStream memory = new MemoryStream( file.GetContents() ) )
+                    ChunkFile chunkie = new ChunkFile();
+                    if ( chunkie.Load( memory ) )
                     {
-                        ChunkFile chunkie = new ChunkFile();
-                        if ( chunkie.Load( memory ) )
-                        {
-                            viewer3D.RemoveMeshes();
-                            GBODChunk gbod = chunkie.Chunks[ 0 ] as GBODChunk;
-                            foreach ( var child in gbod.Children )
-                            {
-                                GPCEChunk piece = null;
-
-                                if ( child is GSKNChunk )
-                                {
-                                    piece = (child as GSKNChunk).Geometry;
-                                }
-
-                                if ( child is GPCEChunk )
-                                {
-                                    piece = child as GPCEChunk;
-                                }
-
-                                if ( piece != null )
-                                {
-                                    viewer3D.CreateMesh( piece.IndexBuffer.Faces, piece.VertexBuffer.Vertices, piece.VertexBuffer.Normals, 
-                                        piece.BoundingBox.VertexMin, piece.BoundingBox.VertexMax , piece.BoundingBox.Origin );
-                                }
-                            }
-                        }
-                        else
-                        {
-                            MessageBox.Show( "FAIL" );
-                        }
+                        MessageBox.Show( "SUCCESS" );
                     }
-                }
-                else
-                {
-                    MessageBox.Show( "nope, not geo." );
+                    else
+                    {
+                        MessageBox.Show( "FAIL" );
+                    }
                 }
             }
         }
@@ -247,6 +217,52 @@ namespace TRRM
             Console.WriteLine( "Operation took {0}", (end - start).ToString() );
             versions.ToList().ForEach( v => Console.WriteLine( "used v {0}", v ) );
             MessageBox.Show( "FINISHED" );
+        }
+
+        private void showImage( PackedFile imageFile )
+        {
+            viewer3D.DisplayTexture( imageFile.GetContents() );
+        }
+
+        private void showGEO( PackedFile geoFile )
+        {
+            if ( geoFile.GetFileType() != TRFileType.GEO )
+                return;
+
+            viewer3D.ClearDisplay();
+
+            using ( MemoryStream memory = new MemoryStream( geoFile.GetContents() ) )
+            {
+                ChunkFile chunkie = new ChunkFile();
+                if ( chunkie.Load( memory ) )
+                {
+                    GBODChunk gbod = chunkie.Chunks[ 0 ] as GBODChunk;
+                    foreach ( var child in gbod.Children )
+                    {
+                        GPCEChunk piece = null;
+
+                        if ( child is GSKNChunk )
+                        {
+                            piece = ( child as GSKNChunk ).Geometry;
+                        }
+
+                        if ( child is GPCEChunk )
+                        {
+                            piece = child as GPCEChunk;
+                        }
+
+                        if ( piece != null )
+                        {
+                            viewer3D.CreateMesh( piece.IndexBuffer.Faces, piece.VertexBuffer.Vertices, piece.VertexBuffer.Normals,
+                                piece.BoundingBox.VertexMin, piece.BoundingBox.VertexMax, piece.BoundingBox.Origin );
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show( "Failed to load geometry file" );
+                }
+            }
         }
     }
 }
