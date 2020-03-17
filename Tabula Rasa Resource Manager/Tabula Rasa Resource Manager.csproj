@@ -104,11 +104,11 @@
     <Compile Include="TRData\FastConsole.cs" />
     <Compile Include="Viewer\Data\BoundingBoxMesh.cs" />
     <Compile Include="Viewer\Data\Mesh.cs" />
-    <Compile Include="Viewer\DDSImage.cs" />
+    <Compile Include="Viewer\Data\ModelCreator.cs" />
     <Compile Include="TRData\ExtensionMethods.cs" />
     <Compile Include="TRData\GLMFile.cs" />
+    <Compile Include="Viewer\Data\DefaultShader.cs" />
     <Compile Include="Viewer\RenderLoop.cs" />
-    <Compile Include="Viewer\TargaImage.cs" />
     <Compile Include="TRData\TRData.cs" />
     <Compile Include="TRData\PackedFile.cs" />
     <Compile Include="Form1.cs">

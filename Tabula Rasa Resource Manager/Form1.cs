@@ -7,8 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
-using KUtility;
-using Paloma;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 
@@ -58,29 +56,18 @@ namespace TRRM
                 switch ( file.GetFileType() )
                 {
                     case TRFileType.DDS:
-                        try
-                        {
-                            DDSImage dds = new DDSImage( file.GetContents() );
-                            pbPreview.Image = dds.images.First();
-                        }
-                        catch ( Exception )
-                        {
-                            pbPreview.Image = null;
-                        }
-                        break;
                     case TRFileType.TGA:
-                        using ( MemoryStream memory = new MemoryStream( file.GetContents() ) )
-                        {
-                            TargaImage tga = new TargaImage( memory );
-                            pbPreview.Image = tga.Image;
-                        }
+                    case TRFileType.JPG:
+                        viewer3D.DisplayTexture( file.GetContents() );
                         break;
+                        /*
                     case TRFileType.JPG:
                         using ( MemoryStream stream = new MemoryStream( file.GetContents() ) )
                         {
                             pbPreview.Image = new Bitmap( stream );
                         }
                         break;
+                        */
                 }
             }
         }

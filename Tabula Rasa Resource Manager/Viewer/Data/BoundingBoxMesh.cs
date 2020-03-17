@@ -9,52 +9,34 @@ using D3D9 = SharpDX.Direct3D9;
 
 namespace TRRM.Viewer.Data
 {
-    class BoundingBoxMesh
+    class BoundingBoxMesh : Mesh
     {
-        public bool Ready { get; set; }
-
-        private D3D9.Device device;
-
-        private D3D9.VertexDeclaration vertexDecl;
-        private Int32 vertexDeclStride;
-
-        // buffers
-        private D3D9.IndexBuffer indexBuffer;
-        private Int32 indexCount;
-        private D3D9.VertexBuffer vertexBuffer;
-        private Int32 vertexCount;
-
-        // matrices
-        public Matrix Origin { get; set; }
-        public Matrix Position { get; set; }
-        public Matrix Rotation { get; set; }
-        public Matrix Scale { get; set; }
-
         // bb info
         // FIXME: take origin into account
         public Vector3 VMin { get; set; }
         public Vector3 VMax { get; set; }
 
         public BoundingBoxMesh( D3D9.Device device )
+            : base( device )
         {
-            this.device = device;
-            Origin = Matrix.Identity;
-            Position = Matrix.Identity;
-            Rotation = Matrix.Identity;
-            Scale = Matrix.Identity;
+            Primitive = D3D9.PrimitiveType.LineList;
         }
 
         ~BoundingBoxMesh()
         {
-            if ( indexBuffer != null )
-                indexBuffer.Dispose();
-            if ( vertexBuffer != null )
-                vertexBuffer.Dispose();
-            if ( vertexDecl != null )
-                vertexDecl.Dispose();
         }
 
-        private void CreateVertexDeclaration()
+        public override void CreateIndexBuffer( List<Face> faces )
+        {
+            // unused
+        }
+
+        public override void CreateVertexBuffer( List<Vertex> vertices, List<Vertex> normals = null )
+        {
+            // unused
+        }
+
+        public override void CreateVertexDeclaration()
         {
             var vertexElems = new[] {
                 new D3D9.VertexElement(0, 0, D3D9.DeclarationType.Float4, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Position, 0),
@@ -62,8 +44,8 @@ namespace TRRM.Viewer.Data
                 D3D9.VertexElement.VertexDeclarationEnd
             };
 
-            vertexDecl = new D3D9.VertexDeclaration( device, vertexElems );
-            vertexDeclStride = 16 + 16;
+            VertexDecl = new D3D9.VertexDeclaration( device, vertexElems );
+            VertexDeclStride = 16 + 16;
         }
 
         public void Create( Vector3 vMin, Vector3 vMax, Vector3 origin )
@@ -86,11 +68,11 @@ namespace TRRM.Viewer.Data
                 new Vector4( vMin.X, vMax.Y, vMax.Z, 1.0f ), color
             };
             
-            vertexBuffer = new D3D9.VertexBuffer( device, sizeof( float ) * 8 * vertices.Length, D3D9.Usage.WriteOnly, D3D9.VertexFormat.None, D3D9.Pool.Managed );
-            vertexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( vertices );
-            vertexBuffer.Unlock();
+            VertexBuffer = new D3D9.VertexBuffer( device, sizeof( float ) * 8 * vertices.Length, D3D9.Usage.WriteOnly, D3D9.VertexFormat.None, D3D9.Pool.Managed );
+            VertexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( vertices );
+            VertexBuffer.Unlock();
 
-            vertexCount = vertices.Length;
+            VertexCount = vertices.Length;
 
             //create indices
 
@@ -108,38 +90,15 @@ namespace TRRM.Viewer.Data
                 indices[ i++ ] = n + 4;
             }
 
-            indexBuffer = new D3D9.IndexBuffer( device, sizeof(int) * 24, D3D9.Usage.WriteOnly, D3D9.Pool.Managed, false );
-            indexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( indices );
-            indexBuffer.Unlock();
+            IndexBuffer = new D3D9.IndexBuffer( device, sizeof(int) * 24, D3D9.Usage.WriteOnly, D3D9.Pool.Managed, false );
+            IndexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( indices );
+            IndexBuffer.Unlock();
 
-            indexCount = indices.Length;
+            IndexCount = indices.Length;
 
             CreateVertexDeclaration();
 
             Ready = true;
-        }
-
-        public void Draw()
-        {
-            D3D9.Material currentMaterial = device.Material;
-
-            D3D9.Material material = new D3D9.Material();
-            material.Ambient = new RawColor4( 0.0f, 1.0f, 0.0f, 1.0f );
-            device.Material = material;
-
-            Matrix corrected = Matrix.Multiply( Origin, Rotation );
-            Matrix positioned = Matrix.Multiply( corrected, Position );
-            Matrix WorldMatrix = Matrix.Multiply( positioned, Scale );
-            device.SetTransform( D3D9.TransformState.World, WorldMatrix );
-
-            device.SetStreamSource( 0, vertexBuffer, 0, vertexDeclStride );
-            device.VertexDeclaration = vertexDecl;
-            device.Indices = indexBuffer;
-            device.DrawIndexedPrimitive( D3D9.PrimitiveType.LineList, 0, 0, vertexCount, 0, indexCount / 2 );
-
-            // restore state
-            device.SetTransform( D3D9.TransformState.World, Matrix.Identity );
-            device.Material = currentMaterial;
         }
     }
 }

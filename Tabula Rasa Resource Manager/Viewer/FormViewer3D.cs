@@ -22,24 +22,49 @@ namespace TRRM.Viewer
 
     class FormViewer3D : RenderForm
     {
+        private D3D9.Direct3D Direct3D;
         public D3D9.Device Device;
-        private Thread RenderThread;
 
+        private Thread RenderThread;
         private object d3dLock;
+
+        // for showing images
+        private D3D9.Sprite sprite;
+        private Matrix spriteTransform;
+        private D3D9.Texture texture;
+        // for showing models
         private List<Data.Mesh> meshes;
+        // for testing
         private Data.BoundingBoxMesh testCube;
+
+        private D3D9.Effect basicEffect;
 
         public FormViewer3D()
             : base( "TRRM - 3D Viewer" )
         {
             Icon = TRRM.Properties.Resources.IconTR;
-            ClientSize = new System.Drawing.Size( 640, 480 );
+            ClientSize = new System.Drawing.Size( 800, 600 );
 
-            Device = new D3D9.Device( new D3D9.Direct3D(), 0, D3D9.DeviceType.Hardware, Handle,
+            Direct3D = new D3D9.Direct3D();
+            Device = new D3D9.Device( Direct3D, 0, D3D9.DeviceType.Hardware, Handle,
                 D3D9.CreateFlags.HardwareVertexProcessing, new D3D9.PresentParameters( ClientSize.Width, ClientSize.Height ) );
 
             meshes = new List<Data.Mesh>();
             d3dLock = new object();
+
+            sprite = new D3D9.Sprite( Device );
+            basicEffect = D3D9.Effect.FromString( Device, Data.Shader.Basic, D3D9.ShaderFlags.None );
+        }
+
+        ~FormViewer3D()
+        {
+            if ( texture != null )
+                texture.Dispose();
+
+            sprite.Dispose();
+            basicEffect.Dispose();
+            Device.Dispose();
+            Direct3D.Dispose();
         }
 
         public new void Show()
@@ -49,6 +74,35 @@ namespace TRRM.Viewer
             RenderThread.Start();
         }
 
+        public void DisplayTexture( byte[] textureData )
+        {
+            lock ( d3dLock )
+            {
+                if (texture != null)
+                    texture.Dispose();
+
+                D3D9.ImageInformation textureInfo = D3D9.ImageInformation.FromMemory( textureData );
+                texture = D3D9.Texture.FromMemory( Device, textureData, D3D9.Usage.None, D3D9.Pool.Managed );
+
+                // center the texture
+                float cw = ClientSize.Width / 2.0f;
+                float ch = ClientSize.Height / 2.0f;
+                Vector2 position = new Vector2( ( ClientSize.Width - textureInfo.Width ) / 2.0f, ( ClientSize.Height - textureInfo.Height  ) / 2.0f );
+                float scaling = 1.0f;
+
+                // if bigger than 512, scale down and recenter
+                if ( textureInfo.Width > 512 || textureInfo.Height > 512 )
+                {
+                    float ws = 512 / (float)textureInfo.Width;
+                    float hs = 512 / (float)textureInfo.Height;
+                    scaling = ws < hs ? ws : hs;
+                    position = new Vector2( ( ClientSize.Width - 512 ) / 2.0f, ( ClientSize.Height - 512 ) / 2.0f );
+                }
+                
+                spriteTransform = Matrix.AffineTransformation2D( scaling, 0.0f, position );
+                Console.WriteLine( "texture w: {0} h: {1} s: {2}", textureInfo.Width, textureInfo.Height, scaling );
+            }
+        }
 
         public void CreateMesh( List<Face> faces, List<Vertex> vertices, List<Vertex> normals, Vertex vMin, Vertex vMax, Vertex origin )
         {
@@ -58,7 +112,7 @@ namespace TRRM.Viewer
                 mesh.CreateIndexBuffer( faces );
                 mesh.CreateVertexBuffer( vertices, normals );
                 mesh.CreateVertexDeclaration();
-                mesh.CreateBoundingBox( vMin, vMax, origin );
+                //mesh.CreateBoundingBox( vMin, vMax, origin );
                 mesh.Origin = Matrix.Translation( new Vector3( -origin.X, -origin.Y, -origin.Z ) );
                 mesh.Ready = true;
 
@@ -85,28 +139,13 @@ namespace TRRM.Viewer
 
         private void RenderFunction()
         {
-            RenderLoop.RenderCallback callback = new RenderLoop.RenderCallback( () => {
+            RenderLoop.RenderCallback callback = new RenderLoop.RenderCallback( () => 
+            {
                 Device.Clear( D3D9.ClearFlags.Target | D3D9.ClearFlags.ZBuffer, Color.Black, 1.0f, 0 );
                 Device.BeginScene();
 
-                Device.SetRenderState( D3D9.RenderState.Lighting, true );
-                Device.SetRenderState( D3D9.RenderState.Ambient, new Color3( 0.5f, 0.5f, 0.5f ).ToRgba() );
-
-                D3D9.Material material = new D3D9.Material();
-                material.Ambient = new RawColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-                Device.Material = material;
-                
-                D3D9.Light dirLight = new D3D9.Light
-                {
-                    Type = D3D9.LightType.Directional,
-                    Diffuse = new RawColor4( 0.5f, 0.5f, 0.5f, 1.0f ),
-                    Direction = new Vector3( -1.0f, -0.3f, 1.0f )
-                };
-
-                Device.SetLight( 0, ref dirLight );
-                Device.EnableLight( 0, true );
-
                 float maxZ = 50.0f;
+                /*
                 if ( meshes.Count > 0 )
                 {
                     float maxZ1 = meshes.Max( m => Math.Abs( m.BoundingBox.VMin.Z ) );
@@ -114,39 +153,52 @@ namespace TRRM.Viewer
                     maxZ = maxZ1 > maxZ2 ? maxZ1 : maxZ2;
                     maxZ = Math.Max( Math.Min( maxZ * 10.0f, 50.0f ), 2.0f );
                 }
+                */
 
                 Vector3 EyeVector = new Vector3( 0.0f, 0.0f, -maxZ );
                 Vector3 LookAtVector = new Vector3( 0.0f, 0.0f, 0.0f );
                 Vector3 UpVector = new Vector3( 0.0f, 1.0f, 0.0f );
 
                 Matrix ViewMatrix = Matrix.LookAtLH( EyeVector, LookAtVector, UpVector );
-                Device.SetTransform( D3D9.TransformState.View, ViewMatrix );
-                
-                Matrix ProjectionMatrix = SharpDX.Matrix.PerspectiveFovLH( (float)Math.PI / 4.0f, 640.0f / 480.0f, 1.0f, 1000.0f );
-                Device.SetTransform( D3D9.TransformState.Projection, ProjectionMatrix );
+                Matrix ProjectionMatrix = SharpDX.Matrix.PerspectiveFovLH( (float)Math.PI / 4.0f, ClientSize.Width / (float)ClientSize.Height, 1.0f, 1000.0f );
+                Matrix ViewProjMatrix = ViewMatrix * ProjectionMatrix;
 
-                Matrix WorldMatrix = Matrix.Identity;
-                Device.SetTransform( D3D9.TransformState.World, WorldMatrix );
+                var technique = basicEffect.GetTechnique( 0 );
+                basicEffect.Technique = technique;
+                basicEffect.Begin();
+                basicEffect.BeginPass( 0 );
 
-                //Int64 timestamp = Stopwatch.GetTimestamp();
+                float radians = 0.01047197551f * ( (float)Math.PI / 180.0f );
+
                 if ( testCube != null )
-                {
-                    float radians = 0.01047197551f * ( (float)Math.PI / 180.0f );
-                    testCube.Rotation = Matrix.Multiply( testCube.Rotation, Matrix.RotationAxis( Vector3.Up, radians ) );
-                    testCube.Draw();
+                {    
+                    testCube.Rotation = testCube.Rotation * Matrix.RotationAxis( Vector3.Up, radians );
+                    drawMesh( ViewProjMatrix, testCube );
                 }
                 else
                 {
-                    foreach ( var mesh in meshes )
+                    if ( texture != null )
                     {
-                        if ( mesh.Ready )
+                        sprite.Transform = spriteTransform;
+                        sprite.Begin( D3D9.SpriteFlags.AlphaBlend );
+                        sprite.Draw( texture, new RawColorBGRA( 255, 255, 255, 255 ) );
+                        sprite.End();
+                    }
+                    else
+                    {
+                        foreach ( var mesh in meshes )
                         {
-                            float radians = 0.01047197551f * ( (float)Math.PI / 180.0f );
-                            mesh.Rotation = Matrix.Multiply( mesh.Rotation, Matrix.RotationAxis( Vector3.Up, radians ) );
-                            mesh.Draw();
+                            if ( mesh.Ready )
+                            {
+                                mesh.Rotation = Matrix.Multiply( mesh.Rotation, Matrix.RotationAxis( Vector3.Up, radians ) );
+                                drawMesh( ViewProjMatrix, mesh );
+                            }
                         }
                     }
                 }
+
+                basicEffect.EndPass();
+                basicEffect.End();
 
                 Device.EndScene();
                 Device.Present();
@@ -160,7 +212,13 @@ namespace TRRM.Viewer
                 {
                     lock ( d3dLock )
                     {
-                        callback();
+                        try
+                        {
+                            callback();
+                        } catch(SharpDXException e)
+                        {
+                            Console.WriteLine( "DX error occurred: {0}", e.Message );
+                        }
                     }
                     DateTime now = DateTime.Now;
                     double elapsed = (now -last ).TotalMilliseconds;
@@ -170,6 +228,21 @@ namespace TRRM.Viewer
                     }
                 }
             }
+        }
+
+        private void drawMesh( Matrix ViewProjMatrix, Data.Mesh mesh )
+        {
+            Matrix WorldMatrix = mesh.Origin * mesh.Rotation * mesh.Position;
+            Matrix WorldViewProjMatrix = WorldMatrix * ViewProjMatrix;
+
+            basicEffect.SetValue( "worldViewProj", WorldViewProjMatrix );
+
+            Device.SetStreamSource( 0, mesh.VertexBuffer, 0, mesh.VertexDeclStride );
+            Device.VertexDeclaration = mesh.VertexDecl;
+            Device.Indices = mesh.IndexBuffer;
+
+            Int32 primitiveCount = mesh.IndexCount / ( mesh.Primitive == D3D9.PrimitiveType.LineList ? 2 : 3 );
+            Device.DrawIndexedPrimitive( mesh.Primitive, 0, 0, mesh.VertexCount, 0, primitiveCount );
         }
     }
 }
