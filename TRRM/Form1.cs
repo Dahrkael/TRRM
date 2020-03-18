@@ -20,7 +20,7 @@ namespace TRRM
         public Form1()
         {
             InitializeComponent();
-            Icon = TRRM.Properties.Resources.IconTR;
+            Icon = TRRM.Properties.Resources.trrm;
 
             string dataFolder;
             if ( Program.Arguments.TryGetValue( "data", out dataFolder ) )

@@ -84,8 +84,9 @@ namespace TRRM.Viewer
         public FormViewer3D()
             : base( "TRRM - 3D Viewer" )
         {
-            Icon = TRRM.Properties.Resources.IconTR;
+            Icon = TRRM.Properties.Resources.trrm;
             ClientSize = new System.Drawing.Size( 1280, 720 );//( 800, 600 );
+            AllowUserResizing = false;
 
             D3D9.Direct3D direct3D = new D3D9.Direct3D();
             DX = new DX(

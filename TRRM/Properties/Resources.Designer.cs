@@ -63,9 +63,9 @@ namespace TRRM.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Icon similar a (Icono).
         /// </summary>
-        internal static System.Drawing.Icon IconTR {
+        internal static System.Drawing.Icon trrm {
             get {
-                object obj = ResourceManager.GetObject("IconTR", resourceCulture);
+                object obj = ResourceManager.GetObject("trrm", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

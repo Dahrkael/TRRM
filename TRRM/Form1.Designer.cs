@@ -32,6 +32,7 @@
             this.buttonExtract = new System.Windows.Forms.Button();
             this.saveDialog = new System.Windows.Forms.SaveFileDialog();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btnTestPARM = new System.Windows.Forms.Button();
             this.btnAll = new System.Windows.Forms.Button();
             this.btnSearch = new System.Windows.Forms.Button();
             this.txtSearch = new System.Windows.Forms.TextBox();
@@ -39,7 +40,6 @@
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.filesTV = new System.Windows.Forms.TreeView();
             this.chooseFolderDialog = new System.Windows.Forms.FolderBrowserDialog();
-            this.btnTestPARM = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -81,9 +81,19 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Commands";
             // 
+            // btnTestPARM
+            // 
+            this.btnTestPARM.Location = new System.Drawing.Point(87, 62);
+            this.btnTestPARM.Name = "btnTestPARM";
+            this.btnTestPARM.Size = new System.Drawing.Size(80, 23);
+            this.btnTestPARM.TabIndex = 10;
+            this.btnTestPARM.Text = "Check PARM";
+            this.btnTestPARM.UseVisualStyleBackColor = true;
+            this.btnTestPARM.Click += new System.EventHandler(this.btnTestPARM_Click);
+            // 
             // btnAll
             // 
-            this.btnAll.Location = new System.Drawing.Point(445, 63);
+            this.btnAll.Location = new System.Drawing.Point(173, 62);
             this.btnAll.Name = "btnAll";
             this.btnAll.Size = new System.Drawing.Size(75, 23);
             this.btnAll.TabIndex = 9;
@@ -111,11 +121,11 @@
             // 
             // btnTest
             // 
-            this.btnTest.Location = new System.Drawing.Point(526, 62);
+            this.btnTest.Location = new System.Drawing.Point(6, 62);
             this.btnTest.Name = "btnTest";
             this.btnTest.Size = new System.Drawing.Size(75, 23);
             this.btnTest.TabIndex = 6;
-            this.btnTest.Text = "Test Chunk Read";
+            this.btnTest.Text = "Test Chunk";
             this.btnTest.UseVisualStyleBackColor = true;
             this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
             // 
@@ -146,16 +156,6 @@
             // chooseFolderDialog
             // 
             this.chooseFolderDialog.ShowNewFolderButton = false;
-            // 
-            // btnTestPARM
-            // 
-            this.btnTestPARM.Location = new System.Drawing.Point(6, 62);
-            this.btnTestPARM.Name = "btnTestPARM";
-            this.btnTestPARM.Size = new System.Drawing.Size(80, 23);
-            this.btnTestPARM.TabIndex = 10;
-            this.btnTestPARM.Text = "Check PARM";
-            this.btnTestPARM.UseVisualStyleBackColor = true;
-            this.btnTestPARM.Click += new System.EventHandler(this.btnTestPARM_Click);
             // 
             // Form1
             // 
