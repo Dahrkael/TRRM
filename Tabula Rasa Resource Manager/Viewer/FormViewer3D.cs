@@ -98,7 +98,7 @@ namespace TRRM.Viewer
 
             sprite = new D3D9.Sprite( DX.Device );
             basicEffect = D3D9.Effect.FromString( DX.Device, Data.Shader.Basic, D3D9.ShaderFlags.None );
-            lightEffect = D3D9.Effect.FromString( DX.Device, Data.Shader.Phong, D3D9.ShaderFlags.None );
+            lightEffect = D3D9.Effect.FromString( DX.Device, Data.Shader.TexturePhong, D3D9.ShaderFlags.None );
         }
 
         ~FormViewer3D()
@@ -150,7 +150,7 @@ namespace TRRM.Viewer
             lock ( DX.GlobalLock )
             {
                 textureInfo = D3D9.ImageInformation.FromMemory( textureData );
-                texture = D3D9.Texture.FromMemory( DX.Device, textureData, D3D9.Usage.None, D3D9.Pool.Managed );
+                texture = D3D9.Texture.FromMemory( DX.Device, textureData );
             }
             // center the texture
             float cw = ClientSize.Width / 2.0f;
@@ -233,7 +233,7 @@ namespace TRRM.Viewer
             // wireframe is cool
             //Device.SetRenderState( D3D9.RenderState.FillMode, D3D9.FillMode.Wireframe );
 
-            float maxZ = 50.0f;
+            float maxZ = 25.0f;
             /*
             if ( meshes.Count > 0 )
             {
@@ -292,8 +292,8 @@ namespace TRRM.Viewer
 
             using ( EffectBlock effect = new EffectBlock( lightEffect ) )
             {
-                effect.Effect.SetValue( "gAmbientLight", new Color4( 0.4f, 0.4f, 0.4f, 1.0f ) );
-                effect.Effect.SetValue( "gDiffuseLight", new Color4( 0.5f, 0.5f, 0.5f, 1.0f ) );
+                effect.Effect.SetValue( "gAmbientLight", new Color4( 0.5f, 0.5f, 0.5f, 1.0f ) );
+                effect.Effect.SetValue( "gDiffuseLight", new Color4( 0.9f, 0.9f, 0.9f, 1.9f ) );
                 effect.Effect.SetValue( "gDiffuseVecW", new Vector3( 1.0f, -0.5f, -1.0f ) );
 
                 foreach ( var mesh in meshes )
@@ -309,7 +309,7 @@ namespace TRRM.Viewer
 
         private void drawMesh( Matrix viewProjMatrix, Data.Mesh mesh, D3D9.Effect effect )
         {
-            Matrix worldMatrix = mesh.Origin * mesh.Rotation * mesh.Position;
+            Matrix worldMatrix = /*mesh.Origin **/ mesh.Rotation * mesh.Position;
             Matrix worldViewProjMatrix = worldMatrix * viewProjMatrix;
 
             Matrix worldInverseTranspose = Matrix.Invert( worldMatrix );
@@ -317,6 +317,8 @@ namespace TRRM.Viewer
 
             effect.SetValue( "gWorldViewProj", worldViewProjMatrix );
             effect.SetValue( "gWorldInvTrans", worldInverseTranspose );
+            effect.SetTexture( "gDiffuseTexture", mesh.DiffuseTexture );
+            effect.CommitChanges();
 
             DX.Device.SetStreamSource( 0, mesh.VertexBuffer, 0, mesh.VertexDeclStride );
             DX.Device.VertexDeclaration = mesh.VertexDecl;

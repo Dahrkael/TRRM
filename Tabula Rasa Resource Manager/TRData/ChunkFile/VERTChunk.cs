@@ -13,12 +13,14 @@ namespace TRRM
         public List<Vertex> Vertices;
         public List<Vertex> Normals;
         public List<UV> UVs;
+        public List<UInt32> Colors;
 
         public override bool Load( BinaryReader reader )
         {
             Vertices = new List<Vertex>();
             Normals = new List<Vertex>();
             UVs = new List<UV>();
+            Colors = new List<UInt32>();
 
             Start( reader );
             if ( !ReadHeader( reader ) || !IsValidVersion( 1, 2 ) )
@@ -56,7 +58,14 @@ namespace TRRM
                             break;
                         case VertexDeclUsage.TextureCoordinate:
                             UV uv = reader.ReadUV();
-                            UVs.Add( uv );
+                            if ( declaration.UsageIndex == 0 )
+                            {
+                                UVs.Add( uv );
+                            }
+                            break;
+                        case VertexDeclUsage.Color:
+                            UInt32 color = reader.ReadUInt32();
+                            Colors.Add( color );
                             break;
                         default:
                             reader.ReadBytes( declaration.Stride() );

@@ -42,7 +42,7 @@ namespace TRRM
                 case 2:
                     {
                         Int32 count = reader.ReadInt32();
-                        UInt16 currentOffset = 0;
+                        byte currentOffset = 0;
                         for ( Int32 i = 0; i < count; i++ )
                         {
                             VertexDeclaration declaration = new VertexDeclaration()

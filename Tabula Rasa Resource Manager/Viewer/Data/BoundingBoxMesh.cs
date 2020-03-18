@@ -57,7 +57,7 @@ namespace TRRM.Viewer.Data
             IndexCount = indices.Length;
         }
 
-        public override void CreateVertexBuffer( List<Vector3> vertices, List<Vector3> normals )
+        public override void CreateVertexBuffer( List<Vector3> vertices, List<Vector3> normals, List<Color> colors, List<Vector2> uvs )
         {
             // unused
         }

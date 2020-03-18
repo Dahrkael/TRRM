@@ -3,17 +3,20 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 using D3D9 = SharpDX.Direct3D9;
 
 namespace TRRM.Viewer.Data
 {
+    [StructLayout( LayoutKind.Sequential, Pack = 4 )]
     struct MeshVertex
     {
         public Vector3 Position;
         public Vector3 Normal;
         public Color Color;
+        public Vector2 UV;
     }
 
     class Mesh
@@ -34,9 +37,8 @@ namespace TRRM.Viewer.Data
         public D3D9.PrimitiveType Primitive { get; protected set; }
 
         // textures
-        private D3D9.Texture diffuseTexture;
-        private D3D9.Texture normalTexture;
-        private D3D9.Texture glowTexture;
+        public D3D9.Texture DiffuseTexture { get; protected set; }
+        public D3D9.Texture NormalTexture { get; protected set; }
 
         // matrices
         public Matrix Origin { get; set; }
@@ -67,20 +69,18 @@ namespace TRRM.Viewer.Data
                 VertexBuffer.Dispose();
             if ( VertexDecl != null )
                 VertexDecl.Dispose();
-            if ( diffuseTexture != null )
-                diffuseTexture.Dispose();
-            if ( normalTexture != null )
-                normalTexture.Dispose();
-            if ( glowTexture != null )
-                glowTexture.Dispose();
+            if ( DiffuseTexture != null )
+                DiffuseTexture.Dispose();
+            if ( NormalTexture != null )
+                NormalTexture.Dispose();
         }
 
-        public void Create( List<Vector3> vertices, List<Face> faces, List<Vector3> normals = null )
+        public void Create( List<Vector3> vertices, List<Face> faces, List<Vector2> uvs, List<Color> colors, List<Vector3> normals = null )
         {
             CreateIndexBuffer( faces );
             if ( normals == null )
                 normals = ComputeNormals( vertices, faces );
-            CreateVertexBuffer( vertices, normals );
+            CreateVertexBuffer( vertices, normals, colors, uvs );
             CreateVertexDeclaration();
 
             Ready = true;
@@ -97,7 +97,7 @@ namespace TRRM.Viewer.Data
             IndexCount = faces.Count * 3;
         }
 
-        public virtual void CreateVertexBuffer( List<Vector3> vertices, List<Vector3> normals )
+        public virtual void CreateVertexBuffer( List<Vector3> vertices, List<Vector3> normals, List<Color> colors, List<Vector2> uvs )
         {
             MeshVertex[] data = new MeshVertex[ vertices.Count ];
             for( int i = 0; i < vertices.Count; i++ )
@@ -106,14 +106,15 @@ namespace TRRM.Viewer.Data
                 {
                     Position = vertices[ i ],
                     Normal = normals[ i ],
-                    Color = Color.White,
+                    Color = colors[ i ],
+                    UV =  uvs[ i ]
                 };
                 data[ i ] = vertex;
             }
 
             lock ( DX.GlobalLock )
             {
-                VertexBuffer = new D3D9.VertexBuffer( DX.Device, vertices.Count * 28, D3D9.Usage.WriteOnly, D3D9.VertexFormat.None, D3D9.Pool.Managed );
+                VertexBuffer = new D3D9.VertexBuffer( DX.Device, vertices.Count * 36, D3D9.Usage.WriteOnly, D3D9.VertexFormat.None, D3D9.Pool.Managed );
                 VertexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( data );
                 VertexBuffer.Unlock();
             }
@@ -129,19 +130,21 @@ namespace TRRM.Viewer.Data
                     new D3D9.VertexElement(0, 0, D3D9.DeclarationType.Float3, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Position, 0),
                     new D3D9.VertexElement(0, 12, D3D9.DeclarationType.Float3, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Normal, 0),
                     new D3D9.VertexElement(0, 24, D3D9.DeclarationType.Color, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.Color, 0),
+                    new D3D9.VertexElement(0, 28, D3D9.DeclarationType.Float2, D3D9.DeclarationMethod.Default, D3D9.DeclarationUsage.TextureCoordinate, 0),
                     D3D9.VertexElement.VertexDeclarationEnd
                 };
 
                 VertexDecl = new D3D9.VertexDeclaration( DX.Device, vertexElems );
             }
-            VertexDeclStride = 28;
+            
+            VertexDeclStride = 36;
         }
 
         public void LoadDiffuseTexture( byte[] data )
         {
             lock ( DX.GlobalLock )
             {
-                diffuseTexture = D3D9.Texture.FromMemory( DX.Device, data, D3D9.Usage.WriteOnly, D3D9.Pool.Managed );
+                DiffuseTexture = D3D9.Texture.FromMemory( DX.Device, data );
             }
         }
         /*

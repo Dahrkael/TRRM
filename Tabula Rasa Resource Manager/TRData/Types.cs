@@ -142,13 +142,13 @@ namespace TRRM
 
     public struct VertexDeclaration
     {
-        public UInt16 Offset;
+        public byte Offset;
         public VertexDeclType Type;
         public VertexDeclMethod Method;
         public VertexDeclUsage Usage;
         public byte UsageIndex;
 
-        public UInt16 Stride()
+        public byte Stride()
         {
             switch ( Type )
             {

@@ -44,6 +44,9 @@ namespace TRRM
         private void loadTRData( string folder )
         {
             this.trData = new TRData( folder );
+
+            Viewer.ModelCreator.trData = trData;
+
             fillList();
         }
 
@@ -178,7 +181,8 @@ namespace TRRM
 
         private void btnTestPARM_Click( object sender, EventArgs e )
         {
-            HashSet<uint> versions = new HashSet<uint>();
+            List<string> files = new List<string>();
+
             DateTime start = DateTime.Now;
             foreach( PackedFile file in trData.Filesystem.Values )
             {
@@ -206,7 +210,10 @@ namespace TRRM
 
                                 if ( piece != null )
                                 {
-                                    piece.Effect.parms.ForEach( p => versions.Add( p.Header.Version ) );
+                                    if ( piece.Effect.parms.Where( p => p.Key == "DiffuseTexture" ).Count() == 0 )
+                                    {
+                                        files.Add( file.Filename );
+                                    }
                                 }
                             }
                         }
@@ -215,7 +222,7 @@ namespace TRRM
             }
             DateTime end = DateTime.Now;
             Console.WriteLine( "Operation took {0}", (end - start).ToString() );
-            versions.ToList().ForEach( v => Console.WriteLine( "used v {0}", v ) );
+            files.ForEach( v => Console.WriteLine( "ndf: {0}", v ) );
             MessageBox.Show( "FINISHED" );
         }
 
