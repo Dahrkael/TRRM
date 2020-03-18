@@ -85,7 +85,7 @@ namespace TRRM.Viewer
             : base( "TRRM - 3D Viewer" )
         {
             Icon = TRRM.Properties.Resources.IconTR;
-            ClientSize = new System.Drawing.Size( 800, 600 );
+            ClientSize = new System.Drawing.Size( 1280, 720 );//( 800, 600 );
 
             D3D9.Direct3D direct3D = new D3D9.Direct3D();
             DX = new DX(
@@ -233,23 +233,27 @@ namespace TRRM.Viewer
             // wireframe is cool
             //Device.SetRenderState( D3D9.RenderState.FillMode, D3D9.FillMode.Wireframe );
 
+            float fov = (float)Math.PI / 4.0f;
             float maxZ = 25.0f;
-            /*
+            
             if ( meshes.Count > 0 )
             {
-                float maxZ1 = meshes.Max( m => Math.Abs( m.BoundingBox.VMin.Z ) );
-                float maxZ2 = meshes.Max( m => Math.Abs( m.BoundingBox.VMax.Z ) );
-                maxZ = maxZ1 > maxZ2 ? maxZ1 : maxZ2;
-                maxZ = Math.Max( Math.Min( maxZ * 10.0f, 50.0f ), 2.0f );
+                float radius = meshes.Max( m => m.BoundingBox.SphereRadius() );
+                
+                //float cameraView = (float)Math.Tan( fov * 0.5 * ( Math.PI / 180.0 ) );
+                //float distance = ( radius * 0.5f ) / cameraView;
+                //distance += 0.5f * radius;
+                //maxZ = distance;
+
+                maxZ = radius * 1.75f;
             }
-            */
 
             Vector3 eyeVector = new Vector3( 0.0f, 0.0f, -maxZ );
             Vector3 lookAtVector = new Vector3( 0.0f, 0.0f, 0.0f );
             Vector3 upVector = new Vector3( 0.0f, 1.0f, 0.0f );
 
             Matrix viewMatrix = Matrix.LookAtLH( eyeVector, lookAtVector, upVector );
-            Matrix projectionMatrix = SharpDX.Matrix.PerspectiveFovLH( (float)Math.PI / 4.0f, ClientSize.Width / (float)ClientSize.Height, 1.0f, 1000.0f );
+            Matrix projectionMatrix = SharpDX.Matrix.PerspectiveFovLH( fov, ClientSize.Width / (float)ClientSize.Height, 1.0f, 1000.0f );
             Matrix viewProjMatrix = viewMatrix * projectionMatrix;
 
             float radians = 0.01047197551f * ( (float)Math.PI / 180.0f );
@@ -270,7 +274,7 @@ namespace TRRM.Viewer
             using ( EffectBlock effect = new EffectBlock( basicEffect ) )
             {
                 testCube.Rotation = testCube.Rotation * Matrix.RotationAxis( Vector3.Up, radians );
-                drawMesh( viewProjMatrix, testCube, effect.Effect );
+                drawMesh( Matrix.Identity, viewProjMatrix, testCube, effect.Effect );
             }
         }
 
@@ -296,23 +300,25 @@ namespace TRRM.Viewer
                 effect.Effect.SetValue( "gDiffuseLight", new Color4( 0.9f, 0.9f, 0.9f, 1.9f ) );
                 effect.Effect.SetValue( "gDiffuseVecW", new Vector3( 1.0f, -0.5f, -1.0f ) );
 
+                Data.BoundingBox fullBox = new Data.BoundingBox( meshes.Select( m => m.BoundingBox ).ToList() );
+                Matrix worldMatrix = Matrix.Invert( Matrix.Translation( fullBox.Origin ) );
                 foreach ( var mesh in meshes )
                 {
                     if ( mesh.Ready )
                     {
                         mesh.Rotation = Matrix.Multiply( mesh.Rotation, Matrix.RotationAxis( Vector3.Up, radians ) );
-                        drawMesh( viewProjMatrix, mesh, effect.Effect );
+                        drawMesh( worldMatrix, viewProjMatrix, mesh, effect.Effect );
                     }
                 }
             }
         }
 
-        private void drawMesh( Matrix viewProjMatrix, Data.Mesh mesh, D3D9.Effect effect )
+        private void drawMesh( Matrix worldMatrix, Matrix viewProjMatrix, Data.Mesh mesh, D3D9.Effect effect )
         {
-            Matrix worldMatrix = /*mesh.Origin **/ mesh.Rotation * mesh.Position;
-            Matrix worldViewProjMatrix = worldMatrix * viewProjMatrix;
+            Matrix worldMatrix2 = worldMatrix * mesh.Rotation * mesh.Position;
+            Matrix worldViewProjMatrix = worldMatrix2 * viewProjMatrix;
 
-            Matrix worldInverseTranspose = Matrix.Invert( worldMatrix );
+            Matrix worldInverseTranspose = Matrix.Invert( worldMatrix2 );
             worldInverseTranspose = Matrix.Transpose( worldInverseTranspose );
 
             effect.SetValue( "gWorldViewProj", worldViewProjMatrix );

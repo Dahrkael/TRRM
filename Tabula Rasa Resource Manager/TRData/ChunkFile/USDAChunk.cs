@@ -8,8 +8,12 @@ namespace TRRM
 {
     public class USDAChunk : Chunk
     {
+        public List<Tuple<string, string>> Values;
+
         public override bool Load( BinaryReader reader )
         {
+            Values = new List<Tuple<string, string>>();
+
             Start( reader );
             if ( !ReadHeader( reader ) || !IsValidVersion( 1 ) )
             {
@@ -23,6 +27,7 @@ namespace TRRM
             {
                 string key = reader.ReadCString();
                 string value = reader.ReadCString();
+                Values.Add( new Tuple<string, string>(key, value ));
                 LogInfo("key: " + key + " value: " + value );
             }
 

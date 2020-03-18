@@ -19,6 +19,59 @@ namespace TRRM.Viewer.Data
         public Vector2 UV;
     }
 
+    class BoundingBox
+    {
+        public Vector3 VMin { get; set; }
+        public Vector3 VMax { get; set; }
+        public Vector3 Origin { get; set; }
+
+        public BoundingBox()
+        {
+            VMin = Vector3.Zero;
+            VMax = Vector3.Zero;
+            Origin = Vector3.Zero;
+        }
+
+        public BoundingBox( List<Vector3> vertices )
+        {
+            float minX = vertices.Min( v => v.X );
+            float minY = vertices.Min( v => v.Y );
+            float minZ = vertices.Min( v => v.Z );
+
+            float maxX = vertices.Max( v => v.X );
+            float maxY = vertices.Max( v => v.Y );
+            float maxZ = vertices.Max( v => v.Z );
+
+            VMin = new Vector3( minX, minY, minZ );
+            VMax = new Vector3( maxX, maxY, maxZ );
+            Origin = ( VMin + VMax ) / 2.0f;
+        }
+
+        public BoundingBox( List<BoundingBox> boxes )
+        {
+            float minX = boxes.Min( b => b.VMin.X );
+            float minY = boxes.Min( b => b.VMin.Y );
+            float minZ = boxes.Min( b => b.VMin.Z );
+
+            float maxX = boxes.Max( b => b.VMax.X );
+            float maxY = boxes.Max( b => b.VMax.Y );
+            float maxZ = boxes.Max( b => b.VMax.Z );
+
+            VMin = new Vector3( minX, minY, minZ );
+            VMax = new Vector3( maxX, maxY, maxZ );
+            Origin = ( VMin + VMax ) / 2.0f;
+        }
+
+        public float SphereRadius()
+        {
+            float maxX = Math.Max( Math.Abs( VMax.X ), Math.Abs( VMin.X ) );
+            float maxY = Math.Max( Math.Abs( VMax.Y ), Math.Abs( VMin.Y ) );
+            float maxZ = Math.Max( Math.Abs( VMax.Z ), Math.Abs( VMin.Z ) );
+
+            return Math.Max( Math.Max( maxX, maxY ), maxZ );
+        }
+    }
+
     class Mesh
     {
         public bool Ready { get; set; }
@@ -40,8 +93,10 @@ namespace TRRM.Viewer.Data
         public D3D9.Texture DiffuseTexture { get; protected set; }
         public D3D9.Texture NormalTexture { get; protected set; }
 
+        // bbox info
+        public BoundingBox BoundingBox { get; set; }
+
         // matrices
-        public Matrix Origin { get; set; }
         public Matrix Position { get; set; }
         public Matrix Rotation { get; set; }
         public Matrix Scale { get; set; }
@@ -49,7 +104,6 @@ namespace TRRM.Viewer.Data
         public Mesh( DX dx )
         {
             this.DX = dx;
-            Origin = Matrix.Identity;
             Position = Matrix.Identity;
             Rotation = Matrix.Identity;
             Scale = Matrix.Identity;

@@ -19,13 +19,25 @@ namespace TRRM.Viewer
             {
                 if ( child is GSKNChunk )
                 {
+                    GPCEChunk gpceChunk = (child as GSKNChunk).Geometry;
+
+                    var lods = gpceChunk.USDA.Values.Where( kv => kv.Item1 == "LOD" ).ToList();
+                    if ( lods.Count > 0 && lods[0].Item2 != "0" )
+                        continue;
+
                     Data.Mesh mesh = Generate( (GSKNChunk)child, dx );
                     meshes.Add( mesh );
                 }
 
                 if ( child is GPCEChunk )
                 {
-                    Data.Mesh mesh = Generate( (GPCEChunk)child, dx );
+                    GPCEChunk gpceChunk = child as GPCEChunk;
+
+                    var lods = gpceChunk.USDA.Values.Where( kv => kv.Item1 == "LOD" ).ToList();
+                    if ( lods.Count > 0 && lods[ 0 ].Item2 != "0" )
+                        continue;
+
+                    Data.Mesh mesh = Generate( gpceChunk, dx );
                     meshes.Add( mesh );
                 }
             }
@@ -45,7 +57,9 @@ namespace TRRM.Viewer
             var normals = gpceChunk.VertexBuffer.Normals;
             var uvs = gpceChunk.VertexBuffer.UVs;
             var colors = gpceChunk.VertexBuffer.Colors;
-            Vertex origin = gpceChunk.BoundingBox.Origin;
+            //Vertex origin = gpceChunk.BoundingBox.Origin;
+            //Vertex vMin = gpceChunk.BoundingBox.VertexMin;
+            //Vertex vMax = gpceChunk.BoundingBox.VertexMax;
 
             List<Vector3> vertices3 = vertices.Select( v => new Vector3( v.X, v.Y, v.Z ) ).ToList();
             List<Vector3> normals3 = normals == null ? null : normals.Select( n => new Vector3( n.X, n.Y, n.Z ) ).ToList();
@@ -55,13 +69,14 @@ namespace TRRM.Viewer
             PARMChunk param = gpceChunk.Effect.parms.Where( p => p.Key == "DiffuseTexture" ).FirstOrDefault();
 
             byte[] textureData;
-            if ( param != null )
+            try
             {
                 string textureName = param.Values[ 0 ].ToString();
+                Console.WriteLine( "loading texture {0}", textureName );
                 // assuming it exists
                 textureData = trData.Filesystem[ textureName ].GetContents();
             }
-            else
+            catch ( Exception )
             {
                 // no texture, go with the flow
                 textureData = trData.Filesystem["default.dds"].GetContents();
@@ -70,8 +85,14 @@ namespace TRRM.Viewer
             Data.Mesh mesh = new Viewer.Data.Mesh( dx );
             mesh.Create( vertices3, faces, uvs2, colors1, normals3 );
             mesh.LoadDiffuseTexture( textureData );
+            mesh.BoundingBox = new Data.BoundingBox( vertices3 );
+            //mesh.BoundingBox = new Data.BoundingBox()
+            //{
+            //    VMin = new Vector3( vMin.X, vMin.Y, vMin.Z ),
+            //    VMax = new Vector3( vMax.X, vMax.Y, vMax.Z )
+            //};
             //mesh.CreateBoundingBox( vMin, vMax, origin );
-            mesh.Origin = Matrix.Translation( new Vector3( -origin.X, -origin.Y, -origin.Z ) );
+            //mesh.BoundingBox.Origin = new Vector3( -origin.X, -origin.Y, -origin.Z );
 
             return mesh;
         }
