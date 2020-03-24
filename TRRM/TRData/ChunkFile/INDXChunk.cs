@@ -16,9 +16,15 @@ namespace TRRM
             Faces = new List<Face>();
 
             Start( reader );
-            if ( !ReadHeader( reader ) || !IsValidVersion( 1 ) )
+            if ( !ReadHeader( reader ) || !IsValidVersion( 1, 2 ) )
             {
                 return false;
+            }
+
+            // NOTE: Auto Assault
+            if ( Header.Version == 2 )
+            {
+                UInt64 crc = reader.ReadUInt64();
             }
 
             FaceCount = reader.ReadInt32() / 3;

@@ -11,12 +11,12 @@ namespace TRRM
     {
         public string WSName;
         public float Unknown1;
-        public bool Unknown2;
         public BBOXChunk BoundingBox;
         public CPDGChunk CPDefinitions;
         public PSKEChunk Skeleton;
         public List<Chunk> Children;
-        
+        public List<Chunk> Shadows;
+
         public override bool Load( BinaryReader reader )
         {
             Children = new List<Chunk>();
@@ -31,6 +31,20 @@ namespace TRRM
             {
                 Unknown1 = reader.ReadSingle();
                 FastConsole.WriteLine( "unk1" + Unknown1 );
+            }
+
+            // Auto Assault hack
+            {
+                ChunkType nextChunk = ChunkUtils.PeekNextChunk( reader );
+                if ( nextChunk == ChunkType.None )
+                {
+                    //UInt32 blockSize = reader.ReadUInt32();
+                    UInt32 count = reader.ReadUInt32();
+                    for(UInt32 i = 0; i < count; i++ )
+                    {
+                        string shaderName = reader.ReadCString();
+                    }
+                }
             }
 
             // bounding box
@@ -73,32 +87,36 @@ namespace TRRM
                 throw new NotImplementedException();
             }
 
-            Int32 othersCount = reader.ReadInt32(); // unsure
+            Int32 piecesCount = reader.ReadInt32();
             Children = new List<Chunk>();
-            for ( Int32 i = 0; i < othersCount; i++ )
+            for ( Int32 i = 0; i < piecesCount; i++ )
             {
-                // more tags
                 ChunkType nextChunk = ChunkUtils.PeekNextChunk( reader );
                 Chunk chunk = ChunkUtils.Instance( nextChunk );
                 Debug.Assert( chunk.Load( reader ) );
                 Children.Add( chunk );
             }
 
-            Int32 unkCount = reader.ReadInt32();
-            for ( Int32 i = 0; i < unkCount; i++ )
+            Int32 shadowsCount = reader.ReadInt32();
+            Shadows = new List<Chunk>();
+            for ( Int32 i = 0; i < shadowsCount; i++ )
             {
-                // fDirLgtShadowRang ¿?
-                throw new NotImplementedException();
+                ChunkType nextChunk = ChunkUtils.PeekNextChunk( reader );
+                Chunk chunk = ChunkUtils.Instance( nextChunk );
+                Debug.Assert( chunk.Load( reader ) );
+                Shadows.Add( chunk );
             }
 
             if ( Header.Version >= 2 )
             {
                 // some kind of flag
-                Unknown2 = reader.ReadBoolean();
-                if ( Unknown2 )
+                bool hasLODHandler = reader.ReadBoolean();
+                if ( hasLODHandler )
                 {
+                    // gfxLODHandler
+                    // LDAA LDSD
                     ChunkType nextChunk = ChunkUtils.PeekNextChunk( reader );
-                    Debugger.Break();
+                    Skip( reader );
                 }
             }
 

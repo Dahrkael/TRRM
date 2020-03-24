@@ -31,6 +31,15 @@ namespace TRRM
             {
                 foreach( PackedFile file in glm.Files )
                 {
+                    PackedFile currentFile = null;
+                    Filesystem.TryGetValue( file.Filename, out currentFile );
+
+                    if ( currentFile != null )
+                    {
+                        FastConsole.WriteLine( String.Format( "Duplicated filename {0} in archives {1} and {2}", file.Filename, currentFile.Parent.Filename, glm.Filename ) );
+                        continue;
+                    }
+
                     Filesystem.Add( file.Filename, file );
                 }
             }

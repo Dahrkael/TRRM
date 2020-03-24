@@ -1,6 +1,7 @@
 ﻿using SharpDX;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using D3D9 = SharpDX.Direct3D9;
@@ -66,6 +67,12 @@ namespace TRRM.Viewer
             List<Vector2> uvs2 = uvs.Select( uv => new Vector2( uv.U, uv.V ) ).ToList();
             List<Color> colors1 = colors.Select( c => new Color( c ) ).ToList();
 
+            // Auto Assault Hack
+            if ( colors1.Count == 0 )
+            {
+                vertices.ForEach( f => colors1.Add( Color.White ) );
+            }
+
             PARMChunk param = gpceChunk.Effect.parms.Where( p => p.Key == "DiffuseTexture" ).FirstOrDefault();
 
             byte[] textureData;
@@ -79,7 +86,21 @@ namespace TRRM.Viewer
             catch ( Exception )
             {
                 // no texture, go with the flow
-                textureData = trData.Filesystem["default.dds"].GetContents();
+                // Tabula Rasa
+                if ( trData.Filesystem.ContainsKey( "default.dds" ) )
+                {
+                    textureData = trData.Filesystem[ "default.dds" ].GetContents();
+                }
+                // Auto Assault
+                else if ( trData.Filesystem.ContainsKey( "black_dif.dds" ) )
+                {
+                    textureData = trData.Filesystem[ "black_dif.dds" ].GetContents();
+                }
+                else
+                {
+                    textureData = null;
+                    Debugger.Break();
+                }
             }
 
             Data.Mesh mesh = new Viewer.Data.Mesh( dx );

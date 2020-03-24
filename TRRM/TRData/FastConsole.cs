@@ -12,7 +12,11 @@ namespace TRRM
     // https://stackoverflow.com/questions/5272177/console-writeline-slow
     public static class FastConsole
     {
+#if DEBUG
         private static bool disabled = false;
+#else
+        private static bool disabled = true;
+#endif
 
         private static StringBuilder _sb = new StringBuilder();
         private static int _lineCount;

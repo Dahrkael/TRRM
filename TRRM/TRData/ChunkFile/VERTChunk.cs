@@ -23,13 +23,19 @@ namespace TRRM
             Colors = new List<UInt32>();
 
             Start( reader );
-            if ( !ReadHeader( reader ) || !IsValidVersion( 1, 2 ) )
+            if ( !ReadHeader( reader ) || !IsValidVersion( 1, 2, 3 ) )
             {
                 return false;
             }
             if ( Header.Version == 1 )
             {
                 Debugger.Break();
+            }
+
+            // NOTE: Auto Assault
+            if ( Header.Version == 3 )
+            {
+                UInt64 crc = reader.ReadUInt64();
             }
 
             VertexDeclarations = new DECLChunk();
