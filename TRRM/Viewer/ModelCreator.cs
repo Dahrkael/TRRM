@@ -72,6 +72,10 @@ namespace TRRM.Viewer
             {
                 vertices.ForEach( f => colors1.Add( Color.White ) );
             }
+            if ( uvs2.Count == 0 )
+            {
+                vertices.ForEach( f => uvs2.Add( new Vector2( 0.0f, 0.0f ) ) );
+            }
 
             PARMChunk param = gpceChunk.Effect.parms.Where( p => p.Key == "DiffuseTexture" ).FirstOrDefault();
 
