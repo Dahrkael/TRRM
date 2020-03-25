@@ -22,8 +22,9 @@ namespace TRRM.Viewer
                 {
                     GPCEChunk gpceChunk = (child as GSKNChunk).Geometry;
 
-                    var lods = gpceChunk.USDA.Values.Where( kv => kv.Item1 == "LOD" ).ToList();
-                    if ( lods.Count > 0 && lods[0].Item2 != "0" )
+                    // Tabula Rasa uses 'LOD'. Auto Assault uses 'LODLevel'
+                    var lods = gpceChunk.USDA.Values.Where( kv => kv.Item1 == "LOD" || kv.Item1 == "LODLevel" ).ToList();
+                    if ( lods.Count > 0 && lods[ 0 ].Item2 != "0" )
                         continue;
 
                     Data.Mesh mesh = Generate( (GSKNChunk)child, dx );
@@ -34,7 +35,8 @@ namespace TRRM.Viewer
                 {
                     GPCEChunk gpceChunk = child as GPCEChunk;
 
-                    var lods = gpceChunk.USDA.Values.Where( kv => kv.Item1 == "LOD" ).ToList();
+                    // Tabula Rasa uses 'LOD'. Auto Assault uses 'LODLevel'
+                    var lods = gpceChunk.USDA.Values.Where( kv => kv.Item1 == "LOD" || kv.Item1 == "LODLevel" ).ToList();
                     if ( lods.Count > 0 && lods[ 0 ].Item2 != "0" )
                         continue;
 
