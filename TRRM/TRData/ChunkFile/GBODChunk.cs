@@ -84,7 +84,8 @@ namespace TRRM
             for ( Int32 i = 0; i < morphCount; i++ )
             {
                 // TODO gfxMorphWeightArray
-                throw new NotImplementedException();
+                return false;
+                //throw new NotImplementedException();
             }
 
             Int32 piecesCount = reader.ReadInt32();

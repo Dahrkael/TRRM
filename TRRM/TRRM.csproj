@@ -74,7 +74,8 @@
     <Compile Include="TRData\ChunkFile\assID\IINTChunk.cs" />
     <Compile Include="TRData\ChunkFile\assID\INONChunk.cs" />
     <Compile Include="TRData\ChunkFile\BBOXChunk.cs" />
-    <Compile Include="TRData\ChunkFile\BDATChunk.cs" />
+    <Compile Include="TRData\ChunkFile\Skeleton\BDATChunk.cs" />
+    <Compile Include="TRData\ChunkFile\Shaders\BIFXChunk.cs" />
     <Compile Include="TRData\ChunkFile\BoundingVolume\BVACChunk.cs" />
     <Compile Include="TRData\ChunkFile\BoundingVolume\BVBXChunk.cs" />
     <Compile Include="TRData\ChunkFile\BoundingVolume\BVOLChunk.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="TRData\ChunkFile\Chunk.cs" />
     <Compile Include="TRData\ChunkFile\ChunkFile.cs" />
     <Compile Include="TRData\ChunkFile\CPDFChunk.cs" />
+    <Compile Include="TRData\ChunkFile\Shaders\CPFXChunk.cs" />
     <Compile Include="TRData\ChunkFile\DECLChunk.cs" />
     <Compile Include="TRData\ChunkFile\EFCTChunk.cs" />
     <Compile Include="TRData\ChunkFile\GBODChunk.cs" />
@@ -94,8 +96,9 @@
     <Compile Include="TRData\ChunkFile\INDXChunk.cs" />
     <Compile Include="TRData\ChunkFile\assID\ISTRChunk.cs" />
     <Compile Include="TRData\ChunkFile\PARMChunk.cs" />
-    <Compile Include="TRData\ChunkFile\PBONChunk.cs" />
-    <Compile Include="TRData\ChunkFile\PSKEChunk.cs" />
+    <Compile Include="TRData\ChunkFile\Skeleton\PBONChunk.cs" />
+    <Compile Include="TRData\ChunkFile\Shaders\PFXDChunk.cs" />
+    <Compile Include="TRData\ChunkFile\Skeleton\PSKEChunk.cs" />
     <Compile Include="TRData\ChunkFile\USDAChunk.cs" />
     <Compile Include="TRData\ChunkFile\VERTChunk.cs" />
     <Compile Include="TRData\FastConsole.cs" />
