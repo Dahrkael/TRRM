@@ -44,6 +44,7 @@ namespace TRRM
         private void loadTRData( string folder )
         {
             this.trData = new TRData( folder );
+            this.trData.PreloadShaders();
 
             Viewer.ModelCreator.trData = trData;
 
@@ -171,6 +172,7 @@ namespace TRRM
             if ( e.KeyCode == Keys.Return )
             {
                 btnSearch.PerformClick();
+                e.SuppressKeyPress = true;
             }
         }
 
@@ -238,8 +240,8 @@ namespace TRRM
 
             using ( MemoryStream memory = new MemoryStream( geoFile.GetContents() ) )
             {
-                try
-                {
+                //try
+                //{
                     ChunkFile chunkie = new ChunkFile();
                     if ( chunkie.Load( memory ) )
                     {
@@ -248,10 +250,10 @@ namespace TRRM
                         viewer3D.DisplayMeshes( meshes );
                         return;
                     }
-                } catch( Exception )
+                //} catch( Exception )
                 {
                 }
-                MessageBox.Show( "Failed to load geometry file" );
+                //MessageBox.Show( "Failed to load geometry file" );
             }
         }
     }

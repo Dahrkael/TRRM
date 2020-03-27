@@ -226,13 +226,13 @@ namespace TRRM.Viewer
 
         private void RenderCallback()
         {
-            DX.Device.Clear( D3D9.ClearFlags.Target | D3D9.ClearFlags.ZBuffer, Color.Black, 1.0f, 0 );
+            DX.Device.Clear( D3D9.ClearFlags.Target | D3D9.ClearFlags.ZBuffer, Color.CornflowerBlue, 1.0f, 0 );
             DX.Device.BeginScene();
 
             // disable culling because rotation
             DX.Device.SetRenderState( D3D9.RenderState.CullMode, D3D9.Cull.None );
             // wireframe is cool
-            //Device.SetRenderState( D3D9.RenderState.FillMode, D3D9.FillMode.Wireframe );
+            DX.Device.SetRenderState( D3D9.RenderState.FillMode, D3D9.FillMode.Wireframe );
 
             float fov = (float)Math.PI / 4.0f;
             float maxZ = 25.0f;
@@ -261,7 +261,7 @@ namespace TRRM.Viewer
 
             drawSprite();
             drawTestCube( viewProjMatrix, radians );
-            drawMeshes( viewProjMatrix, radians );
+            drawMeshes( eyeVector, viewMatrix, projectionMatrix, radians );
 
             DX.Device.EndScene();
             DX.Device.Present();
@@ -275,7 +275,7 @@ namespace TRRM.Viewer
             using ( EffectBlock effect = new EffectBlock( basicEffect ) )
             {
                 testCube.Rotation = testCube.Rotation * Matrix.RotationAxis( Vector3.Up, radians );
-                drawMesh( Matrix.Identity, viewProjMatrix, testCube, effect.Effect );
+                drawMeshTest( Matrix.Identity, viewProjMatrix, testCube, effect.Effect );
             }
         }
 
@@ -290,7 +290,62 @@ namespace TRRM.Viewer
             sprite.End();
         }
 
-        private void drawMeshes( Matrix viewProjMatrix, float radians )
+
+        private void drawMeshes( Vector3 eyeVector, Matrix viewMatrix, Matrix projectionMatrix, float radians )
+        {
+            if ( meshes.Count == 0 )
+                return;
+
+            Data.BoundingBox fullBox = new Data.BoundingBox( meshes.Select( m => m.BoundingBox ).ToList() );
+            Matrix worldMatrix = Matrix.Invert( Matrix.Translation( fullBox.Origin ) );
+            foreach ( var mesh in meshes )
+            {
+                if ( mesh.Ready )
+                {
+                    mesh.Rotation = Matrix.Multiply( mesh.Rotation, Matrix.RotationAxis( Vector3.Up, radians ) );
+                    drawMesh( eyeVector, viewMatrix, projectionMatrix, worldMatrix, mesh );
+                }
+            }
+        }
+
+        private void drawMesh( Vector3 eyeVector, Matrix viewMatrix, Matrix projectionMatrix, Matrix worldMatrix, Data.Mesh mesh )
+        {
+            Matrix viewProjMatrix = viewMatrix * projectionMatrix;
+            Matrix worldMatrix2 = worldMatrix * mesh.Rotation * mesh.Position;
+            Matrix worldViewProjMatrix = worldMatrix2 * viewProjMatrix;
+
+            Matrix worldInverseTranspose = Matrix.Invert( worldMatrix2 );
+            worldInverseTranspose = Matrix.Transpose( worldInverseTranspose );
+
+            using ( EffectBlock effect = new EffectBlock( mesh.Effect ) )
+            {
+                effect.Effect.SetValue( "gWorldMatrix", worldMatrix2 );
+                effect.Effect.SetValue( "gViewMatrix", viewMatrix );
+                effect.Effect.SetValue( "gProjectionMatrix", projectionMatrix );
+                effect.Effect.SetValue( "gViewProjectionMatrix", worldViewProjMatrix );
+                effect.Effect.SetValue( "gInvViewProjectionMatrix", worldInverseTranspose );
+                effect.Effect.SetValue( "gWorldEyePos", eyeVector );
+                effect.Effect.SetValue( "gFogEnable", false );
+                
+                //effect.Effect.SetValue( "gMaxWeightsPerVertex", );
+                //effect.Effect.SetValue( "gGlobalEnvTexture", );
+                //effect.Effect.SetValue( "gLogTexture", );
+                //effect.Effect.SetValue( "gShadowDisplacement", );
+                //effect.Effect.SetValue( "gModulateScale", );
+
+                effect.Effect.ApplyParameterBlock( mesh.ParameterBlock );
+                effect.Effect.CommitChanges();
+            }
+
+            DX.Device.SetStreamSource( 0, mesh.VertexBuffer, 0, mesh.VertexDeclStride );
+            DX.Device.VertexDeclaration = mesh.VertexDecl;
+            DX.Device.Indices = mesh.IndexBuffer;
+
+            Int32 primitiveCount = mesh.IndexCount / ( mesh.Primitive == D3D9.PrimitiveType.LineList ? 2 : 3 );
+            DX.Device.DrawIndexedPrimitive( mesh.Primitive, 0, 0, mesh.VertexCount, 0, primitiveCount );
+        }
+
+        private void drawMeshesTest( Matrix viewProjMatrix, float radians )
         {
             if ( meshes.Count == 0 )
                 return;
@@ -308,13 +363,13 @@ namespace TRRM.Viewer
                     if ( mesh.Ready )
                     {
                         mesh.Rotation = Matrix.Multiply( mesh.Rotation, Matrix.RotationAxis( Vector3.Up, radians ) );
-                        drawMesh( worldMatrix, viewProjMatrix, mesh, effect.Effect );
+                        drawMeshTest( worldMatrix, viewProjMatrix, mesh, effect.Effect );
                     }
                 }
             }
         }
 
-        private void drawMesh( Matrix worldMatrix, Matrix viewProjMatrix, Data.Mesh mesh, D3D9.Effect effect )
+        private void drawMeshTest( Matrix worldMatrix, Matrix viewProjMatrix, Data.Mesh mesh, D3D9.Effect effect )
         {
             Matrix worldMatrix2 = worldMatrix * mesh.Rotation * mesh.Position;
             Matrix worldViewProjMatrix = worldMatrix2 * viewProjMatrix;

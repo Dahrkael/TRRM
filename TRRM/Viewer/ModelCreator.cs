@@ -53,16 +53,14 @@ namespace TRRM.Viewer
             return Generate( gsknChunk.Geometry, dx );
         }
 
-        public static Data.Mesh Generate( GPCEChunk gpceChunk, DX dx )
+        // for testing
+        public static Data.Mesh GenerateTest( GPCEChunk gpceChunk, DX dx )
         {
             var faces = gpceChunk.IndexBuffer.Faces;
             var vertices = gpceChunk.VertexBuffer.Vertices;
             var normals = gpceChunk.VertexBuffer.Normals;
             var uvs = gpceChunk.VertexBuffer.UVs;
             var colors = gpceChunk.VertexBuffer.Colors;
-            //Vertex origin = gpceChunk.BoundingBox.Origin;
-            //Vertex vMin = gpceChunk.BoundingBox.VertexMin;
-            //Vertex vMax = gpceChunk.BoundingBox.VertexMax;
 
             List<Vector3> vertices3 = vertices.Select( v => new Vector3( v.X, v.Y, v.Z ) ).ToList();
             List<Vector3> normals3 = normals == null ? null : normals.Select( n => new Vector3( n.X, n.Y, n.Z ) ).ToList();
@@ -113,13 +111,57 @@ namespace TRRM.Viewer
             mesh.Create( vertices3, faces, uvs2, colors1, normals3 );
             mesh.LoadDiffuseTexture( textureData );
             mesh.BoundingBox = new Data.BoundingBox( vertices3 );
-            //mesh.BoundingBox = new Data.BoundingBox()
-            //{
-            //    VMin = new Vector3( vMin.X, vMin.Y, vMin.Z ),
-            //    VMax = new Vector3( vMax.X, vMax.Y, vMax.Z )
-            //};
-            //mesh.CreateBoundingBox( vMin, vMax, origin );
-            //mesh.BoundingBox.Origin = new Vector3( -origin.X, -origin.Y, -origin.Z );
+
+            return mesh;
+        }
+
+        public static Data.Mesh Generate( GPCEChunk gpceChunk, DX dx )
+        {
+            // vertex declaration
+            D3D9.VertexDeclaration vertexDeclaration = Generate( gpceChunk.VertexBuffer.VertexDeclarations, dx );
+            Int32 vertexStride = gpceChunk.VertexBuffer.VertexDeclarations.TotalStride;
+
+            // buffers
+            var faces = gpceChunk.IndexBuffer.Faces;
+            var vertices = gpceChunk.VertexBuffer.Vertices.Select( v =>  new Vector3( v.X, v.Y, v.Z ) ).ToList();
+            var vertexBuffer = gpceChunk.VertexBuffer.RawBuffer;
+
+            // effect
+            string effectName = gpceChunk.Effect.assID.ToString();
+            byte[] effectData = trData.Shaders[ effectName ];
+
+            D3D9.Effect effect;
+            D3D9.EffectHandle parameterBlock;
+            Dictionary<Data.TextureType, D3D9.Texture> textures;
+            lock ( dx.GlobalLock )
+            {
+                effect = D3D9.Effect.FromMemory( dx.Device, effectData, D3D9.ShaderFlags.None );
+
+                Console.WriteLine( "desc: C: {0} - F: {1} - P: {2} - T: {3}", effect.Description.Creator, effect.Description.Functions, effect.Description.Parameters, effect.Description.Techniques );
+                for( int i = 0; i < effect.Description.Functions; i++ )
+                {
+                    var fd = effect.GetFunctionDescription( effect.GetFunction( i ) );
+                    Console.WriteLine( "func: N: {0} - A: {1}", fd.Name, fd.Annotations );
+                }
+                for ( int i = 0; i < effect.Description.Parameters; i++ )
+                {
+                    var fd = effect.GetParameterDescription( effect.GetParameter( null, i ) );
+                    Console.WriteLine( "param: N: {0} - A: {1} - S {2} - T: {3}", fd.Name, fd.Annotations, fd.Semantic, fd.Type );
+                }
+                for ( int i = 0; i < effect.Description.Techniques; i++ )
+                {
+                    var fd = effect.GetTechniqueDescription( effect.GetTechnique( i ) );
+                    Console.WriteLine( "tech: {0} - P: {1} - A: {2}", fd.Name, fd.Passes, fd.Annotations );
+                }
+                Debugger.Break();
+                parameterBlock = Generate( gpceChunk.Effect.parms, effect, out textures, dx );
+            }
+
+            // create the mesh with all the data
+            Data.Mesh mesh = new Viewer.Data.Mesh( dx );
+            mesh.Create( effect, parameterBlock, textures, vertexBuffer, vertices.Count, faces, vertexDeclaration, vertexStride );
+            
+            mesh.BoundingBox = new Data.BoundingBox( vertices );
 
             return mesh;
         }
@@ -141,6 +183,53 @@ namespace TRRM.Viewer
                 D3D9.VertexDeclaration vertexDecl = new D3D9.VertexDeclaration( dx.Device, vertexElements );
                 return vertexDecl;
             }
+        }
+
+        public static D3D9.EffectHandle Generate( List<PARMChunk> parmChunks, D3D9.Effect effect, out Dictionary<Data.TextureType, D3D9.Texture> textures, DX dx )
+        {
+            Dictionary<Data.TextureType, D3D9.Texture>  textureDict = new Dictionary<Data.TextureType, D3D9.Texture>();
+            D3D9.EffectHandle parameterBlock;
+
+            effect.BeginParameterBlock();
+            foreach( PARMChunk parm in parmChunks )
+            {
+                switch ( parm.ValueType )
+                {
+                    // textures
+                    case ParamType.assID:
+                    case ParamType.assID2:
+                        //Debugger.Break();
+                        Data.TextureType type = ( Data.TextureType)Enum.Parse( typeof( Data.TextureType ), parm.Key );
+                        PackedFile textureFile = null;
+                        assIDChunk id = parm.Values.First() as assIDChunk;
+                        trData.Filesystem.TryGetValue( id.ToString(), out textureFile );
+                        D3D9.Texture texture = D3D9.Texture.FromMemory( dx.Device, textureFile.GetContents() );
+                        textureDict.Add( type, texture );
+                        effect.SetTexture( parm.Key, texture );
+                        break;
+                    case ParamType.String:
+                        effect.SetString( parm.Key, ( string )parm.Values.First() );
+                        break;
+                    case ParamType.Bool:
+                        effect.SetValue( parm.Key, ( bool )parm.Values.First() );
+                        break;
+                    case ParamType.Integer:
+                        effect.SetValue( parm.Key, ( int )parm.Values.First() );
+                        break;
+                    case ParamType.Vector:
+                        float[] vectorData = new float[ parm.Values.Count ];
+                        for( Int32 i = 0; i < parm.Values.Count; i++ )
+                        {
+                            vectorData[ i ] = ( float )parm.Values[ i ];
+                        }
+                        effect.SetRawValue( parm.Key, vectorData );
+                        break;
+                }
+            }
+            parameterBlock = effect.EndParameterBlock();
+
+            textures = textureDict;
+            return parameterBlock;
         }
     }
 }

@@ -10,6 +10,25 @@ using D3D9 = SharpDX.Direct3D9;
 
 namespace TRRM.Viewer.Data
 {
+    enum TextureType
+    {
+        DiffuseTexture,
+        GlowTexture,
+        DetailTexture,
+        DecalTexture,
+        EmissiveTexture,
+        NormalMapTexture,
+        GlossMapTexture
+    }
+
+    class EffectParameter
+    {
+        public EffectParameter()
+        {
+
+        }
+    }
+
     [StructLayout( LayoutKind.Sequential, Pack = 4 )]
     struct MeshVertex
     {
@@ -78,6 +97,9 @@ namespace TRRM.Viewer.Data
 
         protected DX DX;
 
+        public D3D9.Effect Effect { get; protected set; }
+        public D3D9.EffectHandle ParameterBlock { get; protected set; }
+
         public D3D9.VertexDeclaration VertexDecl { get; protected set; }
         public Int32 VertexDeclStride { get; protected set; }
 
@@ -90,8 +112,8 @@ namespace TRRM.Viewer.Data
         public D3D9.PrimitiveType Primitive { get; protected set; }
 
         // textures
+        public Dictionary<TextureType, D3D9.Texture> Textures { get; protected set; }
         public D3D9.Texture DiffuseTexture { get; protected set; }
-        public D3D9.Texture NormalTexture { get; protected set; }
 
         // bbox info
         public BoundingBox BoundingBox { get; set; }
@@ -109,6 +131,8 @@ namespace TRRM.Viewer.Data
             Scale = Matrix.Identity;
 
             Primitive = D3D9.PrimitiveType.TriangleList;
+
+            Textures = new Dictionary<TextureType, D3D9.Texture>();
         }
 
         ~Mesh()
@@ -125,10 +149,27 @@ namespace TRRM.Viewer.Data
                 VertexDecl.Dispose();
             if ( DiffuseTexture != null )
                 DiffuseTexture.Dispose();
-            if ( NormalTexture != null )
-                NormalTexture.Dispose();
         }
 
+        public void Create( D3D9.Effect effect, D3D9.EffectHandle parameterBlock, Dictionary<Data.TextureType, D3D9.Texture> textures, byte[] vertexData, Int32 vertexCount, List<Face> faces, D3D9.VertexDeclaration vertexDeclaration, Int32 vertexStride )
+        {
+            // load effect
+            Effect = effect;
+            Textures = textures;
+            ParameterBlock = parameterBlock;
+            
+            // setup vertex declaration
+            VertexDecl = vertexDeclaration;
+            VertexDeclStride = vertexStride;
+
+            // create buffers
+            CreateIndexBuffer( faces );
+            CreateVertexBuffer( vertexData, vertexCount );
+
+            Ready = true;
+        }
+
+        // for testing
         public void Create( List<Vector3> vertices, List<Face> faces, List<Vector2> uvs, List<Color> colors, List<Vector3> normals = null )
         {
             CreateIndexBuffer( faces );
@@ -151,6 +192,7 @@ namespace TRRM.Viewer.Data
             IndexCount = faces.Count * 3;
         }
 
+        // for testing
         public virtual void CreateVertexBuffer( List<Vector3> vertices, List<Vector3> normals, List<Color> colors, List<Vector2> uvs )
         {
             MeshVertex[] data = new MeshVertex[ vertices.Count ];
@@ -175,6 +217,18 @@ namespace TRRM.Viewer.Data
             VertexCount = vertices.Count;
         }
 
+        public virtual void CreateVertexBuffer( byte[] rawBuffer, Int32 vertexCount )
+        {
+            lock ( DX.GlobalLock )
+            {
+                VertexBuffer = new D3D9.VertexBuffer( DX.Device,rawBuffer.Length, D3D9.Usage.WriteOnly, D3D9.VertexFormat.None, D3D9.Pool.Managed );
+                VertexBuffer.Lock( 0, 0, D3D9.LockFlags.None ).WriteRange( rawBuffer );
+                VertexBuffer.Unlock();
+            }
+            VertexCount = vertexCount;
+        }
+
+        // for testing
         public virtual void CreateVertexDeclaration()
         {
             lock ( DX.GlobalLock )
@@ -201,12 +255,16 @@ namespace TRRM.Viewer.Data
                 DiffuseTexture = D3D9.Texture.FromMemory( DX.Device, data );
             }
         }
-        /*
-        public void CreateBoundingBox( Vertex vMin, Vertex vMax, Vertex origin )
+
+        public void SetEffectParameters()
         {
-            BoundingBox = new BoundingBoxMesh( device );
-            BoundingBox.Create( new Vector3( vMin.X, vMin.Y, vMin.Z ), new Vector3( vMax.X, vMax.Y, vMax.Z ), new Vector3( origin.X, origin.Y, origin.Z ) );
-        }*/
+
+        }
+
+        private void LoadTextures()
+        {
+
+        }
 
         private List<Vector3> ComputeNormals( List<Vector3> vertices, List<Face> faces )
         {
