@@ -15,12 +15,15 @@ namespace TRRM
         public List<UV> UVs;
         public List<UInt32> Colors;
 
+        public byte[] RawBuffer;
+
         public override bool Load( BinaryReader reader )
         {
             Vertices = new List<Vertex>();
             Normals = new List<Vertex>();
             UVs = new List<UV>();
             Colors = new List<UInt32>();
+            RawBuffer = new byte[0];
 
             Start( reader );
             if ( !ReadHeader( reader ) || !IsValidVersion( 1, 2, 3 ) )
@@ -45,7 +48,8 @@ namespace TRRM
             }
 
             Int32 count = reader.ReadInt32();
-            LogInfo( "vertices offset: " + reader.BaseStream.Position );
+            Int64 verticesOffset = reader.BaseStream.Position;
+            LogInfo( "vertices offset: " + verticesOffset );
 
             for (Int32 i = 0; i < count; i++ )
             {
@@ -79,8 +83,13 @@ namespace TRRM
                     }
                 }
             }
-            
+
             LogInfo( "vertex count: " + count );
+
+            // rewind and grab the full buffer
+            RawBuffer = new byte[ reader.BaseStream.Position - verticesOffset ];
+            reader.BaseStream.Seek( verticesOffset, SeekOrigin.Begin );
+            reader.ReadBytes( RawBuffer.Length );
 
             End( reader );
             return true;

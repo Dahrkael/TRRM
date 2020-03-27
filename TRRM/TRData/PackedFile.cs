@@ -43,6 +43,8 @@ namespace TRRM
         MP3,
         OGG,
         WAV,
+        XML,
+        FXC,
         Other
     }
 
@@ -78,6 +80,8 @@ namespace TRRM
             if ( Filename.EndsWith( ".mp3" ) ) return TRFileType.MP3;
             if ( Filename.EndsWith( ".ogg" ) ) return TRFileType.OGG;
             if ( Filename.EndsWith( ".wav" ) ) return TRFileType.WAV;
+            if ( Filename.EndsWith( ".xml" ) ) return TRFileType.XML;
+            if ( Filename.EndsWith( ".fxc" ) ) return TRFileType.FXC;
             return TRFileType.Other;
         }
 

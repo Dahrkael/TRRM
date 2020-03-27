@@ -23,6 +23,9 @@ namespace TRRM
         // EFF
         effEffect,
         effVertexDecl,
+        effCompiledEffect,
+        effPrecompiledFXData,
+        effShaderData,
         // ANM
         anmAnimEventsImpl,
         anmAnim,
@@ -138,6 +141,9 @@ namespace TRRM
             { ChunkType.effEffect, "EFCT" },
             { ChunkType.pfxParameter, "PARM" },
             { ChunkType.gfxUSDA, "USDA" },
+            { ChunkType.effCompiledEffect, "CPFX" },
+            { ChunkType.effPrecompiledFXData, "PFXD" },
+            { ChunkType.effShaderData, "BIFX" },
         };
 
         static public string Tag( ChunkType type )
@@ -170,6 +176,8 @@ namespace TRRM
                     return new GPCEChunk();
                 case ChunkType.gfxGeometryPieceSkinned:
                     return new GSKNChunk();
+                case ChunkType.effCompiledEffect:
+                    return new CPFXChunk();
             }
 
             Debugger.Break();
