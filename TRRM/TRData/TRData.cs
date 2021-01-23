@@ -23,7 +23,10 @@ namespace TRRM
             foreach ( string file in foundFiles )
             {
                 GLMFile glmFile = new GLMFile( path, file );
-                GLMFiles.Add( glmFile );
+                if ( !String.IsNullOrEmpty( glmFile.Filename ) )
+                {
+                    GLMFiles.Add( glmFile );
+                }
             }
 
             // put all the files into a hash for faster access

@@ -270,7 +270,10 @@ namespace TRRM
 
             long read = EndOffset - StartOffset;
             long shouldBe = Header.Size + 16;
-            Debug.Assert( read == shouldBe ); // plus header bytes
+            if ( read != shouldBe ) // plus header bytes
+            {
+                Debugger.Break();
+            }
         }
 
         protected void Skip( BinaryReader reader )

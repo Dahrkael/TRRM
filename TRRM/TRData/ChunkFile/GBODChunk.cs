@@ -49,10 +49,17 @@ namespace TRRM
 
             // bounding box
             BoundingBox = new BBOXChunk();
-            Debug.Assert( BoundingBox.Load( reader ) );
+            if ( !BoundingBox.Load( reader ) )
+            {
+                return false;
+            }
+
             //cp definitions
             CPDefinitions = new CPDGChunk();
-            Debug.Assert( CPDefinitions.Load( reader ) );
+            if ( !CPDefinitions.Load( reader ) )
+            {
+                return false;
+            }
 
             // R&D
             // Seems RTTI stuff
@@ -78,7 +85,10 @@ namespace TRRM
 
             // skeleton
             Skeleton = new PSKEChunk();
-            Debug.Assert( Skeleton.Load( reader ) );
+            if ( !Skeleton.Load( reader ) )
+            {
+                return false;
+            }
 
             Int32 morphCount = reader.ReadInt32();
             for ( Int32 i = 0; i < morphCount; i++ )
@@ -94,7 +104,10 @@ namespace TRRM
             {
                 ChunkType nextChunk = ChunkUtils.PeekNextChunk( reader );
                 Chunk chunk = ChunkUtils.Instance( nextChunk );
-                Debug.Assert( chunk.Load( reader ) );
+                if ( !chunk.Load( reader ) )
+                {
+                    return false;
+                }
                 Children.Add( chunk );
             }
 
@@ -104,7 +117,10 @@ namespace TRRM
             {
                 ChunkType nextChunk = ChunkUtils.PeekNextChunk( reader );
                 Chunk chunk = ChunkUtils.Instance( nextChunk );
-                Debug.Assert( chunk.Load( reader ) );
+                if ( !chunk.Load( reader ) )
+                {
+                    return false;
+                }
                 Shadows.Add( chunk );
             }
 

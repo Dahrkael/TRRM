@@ -33,7 +33,7 @@ namespace TRRM
             UInt64 header = file.ReadUInt64();
             if ( header != 0x58584C424B4E4843 )
             {
-                Debug.Fail( "Header doesnt match!\nWrong file?" );
+                Debug.Fail( String.Format( "Header doesnt match!\n{0}\nWrong file?", path ) );
                 return;
             }
 
