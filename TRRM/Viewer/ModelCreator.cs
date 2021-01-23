@@ -51,7 +51,7 @@ namespace TRRM.Viewer
                     PBONChunk bone = null;
                     if ( !String.IsNullOrEmpty( gpceChunk.BoneName ) )
                     {
-                        gbodChunk.Skeleton.Bones.Where( b => b.BoneData.BoneName == gpceChunk.BoneName ).First();
+                        bone = gbodChunk.Skeleton.Bones.Where( b => b.BoneData.BoneName == gpceChunk.BoneName ).First();
                     }
 
                     Data.Mesh mesh = Generate( gpceChunk, bone, dx );
@@ -153,11 +153,7 @@ namespace TRRM.Viewer
             mesh.Create( vertices3, faces, uvs2, colors1, normals3 );
             mesh.LoadDiffuseTexture( textureData );
             mesh.BoundingBox = new Data.BoundingBox( vertices3 );
-            //mesh.BoundingBox = new Data.BoundingBox()
-            //{
-            //    VMin = new Vector3( vMin.X, vMin.Y, vMin.Z ),
-            //    VMax = new Vector3( vMax.X, vMax.Y, vMax.Z )
-            //};
+            //mesh.BoundingBox = new Data.BoundingBox( vMin, vMax, origin );
 
             return mesh;
         }

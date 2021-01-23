@@ -238,20 +238,21 @@ namespace TRRM
 
             using ( MemoryStream memory = new MemoryStream( geoFile.GetContents() ) )
             {
-                try
+                //try
                 {
                     ChunkFile chunkie = new ChunkFile();
                     if ( chunkie.Load( memory ) )
                     {
                         GBODChunk gbod = chunkie.Chunks[ 0 ] as GBODChunk;
                         var meshes = Viewer.ModelCreator.Generate( gbod, viewer3D.DX );
-                        viewer3D.DisplayMeshes( meshes );
+                        var bbox = new Viewer.Data.BoundingBox( gbod.BoundingBox.VertexMin, gbod.BoundingBox.VertexMax, gbod.BoundingBox.Origin );
+                        viewer3D.DisplayMeshes( meshes, bbox );
                         return;
                     }
-                } catch( Exception )
+                } //catch( Exception )
                 {
                 }
-                MessageBox.Show( "Failed to load geometry file" );
+               // MessageBox.Show( "Failed to load geometry file" );
             }
         }
     }

@@ -75,6 +75,7 @@ namespace TRRM.Viewer
         private D3D9.Texture texture;
         // for showing models
         private List<Data.Mesh> meshes;
+        private Data.BoundingBox modelBBox;
         // for testing
         private Data.BoundingBoxMesh testCube;
 
@@ -172,10 +173,11 @@ namespace TRRM.Viewer
             Console.WriteLine( "texture w: {0} h: {1} s: {2}", textureInfo.Width, textureInfo.Height, scaling );
         }
 
-        public void DisplayMeshes( List<Data.Mesh> meshList )
+        public void DisplayMeshes( List<Data.Mesh> meshList, Data.BoundingBox bbox )
         {
             ClearDisplay();
             meshList.ForEach( m => DisplayMesh( m, false ) );
+            this.modelBBox = bbox;
         }
 
         public void DisplayMesh( Data.Mesh mesh, bool clear = true )
@@ -183,7 +185,7 @@ namespace TRRM.Viewer
             if ( clear )
                 ClearDisplay();
 
-            meshes.Add( mesh );
+            this.meshes.Add( mesh );
         }
 
         public void CreateTestCube()
@@ -239,6 +241,7 @@ namespace TRRM.Viewer
             
             if ( meshes.Count > 0 )
             {
+                //float radius = modelBBox.SphereRadius();
                 float radius = meshes.Max( m => m.BoundingBox.SphereRadius() );
                 
                 //float cameraView = (float)Math.Tan( fov * 0.5 * ( Math.PI / 180.0 ) );
@@ -260,8 +263,8 @@ namespace TRRM.Viewer
             float radians = 0.01047197551f * ( (float)Math.PI / 180.0f );
 
             drawSprite();
-            drawTestCube( viewProjMatrix, radians );
             drawMeshes( viewProjMatrix, radians );
+            drawTestCube( viewProjMatrix, radians );
 
             DX.Device.EndScene();
             DX.Device.Present();
@@ -302,6 +305,7 @@ namespace TRRM.Viewer
                 effect.Effect.SetValue( "gDiffuseVecW", new Vector3( 1.0f, -0.5f, -1.0f ) );
 
                 Data.BoundingBox fullBox = new Data.BoundingBox( meshes.Select( m => m.BoundingBox ).ToList() );
+                //Data.BoundingBox fullBox = modelBBox;
                 Matrix worldMatrix = Matrix.Invert( Matrix.Translation( fullBox.Origin ) );
                 foreach ( var mesh in meshes )
                 {

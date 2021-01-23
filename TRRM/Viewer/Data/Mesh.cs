@@ -32,6 +32,13 @@ namespace TRRM.Viewer.Data
             Origin = Vector3.Zero;
         }
 
+        public BoundingBox( Vertex vMin, Vertex vMax, Vertex origin )
+        {
+            VMin = new Vector3( vMin.X, vMin.Y, vMin.Z );
+            VMax = new Vector3( vMax.X, vMax.Y, vMax.Z );
+            Origin = new Vector3( origin.X, origin.Y, origin.Z );
+        }
+
         public BoundingBox( List<Vector3> vertices )
         {
             float minX = vertices.Min( v => v.X );
