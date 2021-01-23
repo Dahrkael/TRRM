@@ -8,7 +8,7 @@ namespace TRRM
 {
     public class PSKEChunk : Chunk
     {
-        List<PBONChunk> Bones;
+        public List<PBONChunk> Bones;
 
         public override bool Load( BinaryReader reader )
         {

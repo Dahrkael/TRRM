@@ -10,9 +10,9 @@ namespace TRRM
     public class BDATChunk : Chunk
     {
         public string BoneName;
-        public float[] Unknown1;
-        public float[] Unknown2;
-        public float[] Unknown3;
+        public float[] Rotation;
+        public float[] Translation;
+        public float[] Scale;
         public float[,] BoneMatrix;
         public Chunk BoundingVolume;
 
@@ -27,11 +27,13 @@ namespace TRRM
             }
 
             BoneName = reader.ReadCString();
-            Unknown1 = reader.ReadFloatArray( 4 );
-            Unknown2 = reader.ReadFloatArray( 3 );
+            Rotation = reader.ReadFloatArray( 4 );
+            Translation = reader.ReadFloatArray( 3 );
+            Scale = new float[ 3 ] { 1.0f, 1.0f, 1.0f };
+
             if (Header.Version == 2)
             {
-                Unknown3 = reader.ReadFloatArray( 3 );
+                Scale = reader.ReadFloatArray( 3 );
             }
 
             BoneMatrix = reader.ReadMatrix( 4, 4 );

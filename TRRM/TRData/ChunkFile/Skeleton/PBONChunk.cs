@@ -12,7 +12,7 @@ namespace TRRM
         public Int32 Unknown1;
         public Int32 Unknown2;
         public float Unknown3;
-        BDATChunk BoneData;
+        public BDATChunk BoneData;
 
         public override bool Load( BinaryReader reader )
         {

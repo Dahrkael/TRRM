@@ -15,6 +15,8 @@ namespace TRRM.Viewer
         public static List<Data.Mesh> Generate( GBODChunk gbodChunk, DX dx )
         {
             List<Data.Mesh> meshes = new List<Data.Mesh>();
+            if ( gbodChunk.Children.Count == 0 )
+                return meshes;
 
             foreach ( var child in gbodChunk.Children )
             {
@@ -27,7 +29,13 @@ namespace TRRM.Viewer
                     if ( lods.Count > 0 && lods[ 0 ].Item2 != "0" )
                         continue;
 
-                    Data.Mesh mesh = Generate( (GSKNChunk)child, dx );
+                    PBONChunk bone = null;
+                    if ( !String.IsNullOrEmpty( gpceChunk.BoneName ) )
+                    {
+                        gbodChunk.Skeleton.Bones.Where( b => b.BoneData.BoneName == gpceChunk.BoneName ).First();
+                    }
+
+                    Data.Mesh mesh = Generate( (GSKNChunk)child, bone, dx );
                     meshes.Add( mesh );
                 }
 
@@ -40,7 +48,13 @@ namespace TRRM.Viewer
                     if ( lods.Count > 0 && lods[ 0 ].Item2 != "0" )
                         continue;
 
-                    Data.Mesh mesh = Generate( gpceChunk, dx );
+                    PBONChunk bone = null;
+                    if ( !String.IsNullOrEmpty( gpceChunk.BoneName ) )
+                    {
+                        gbodChunk.Skeleton.Bones.Where( b => b.BoneData.BoneName == gpceChunk.BoneName ).First();
+                    }
+
+                    Data.Mesh mesh = Generate( gpceChunk, bone, dx );
                     meshes.Add( mesh );
                 }
             }
@@ -48,21 +62,21 @@ namespace TRRM.Viewer
             return meshes;
         }
 
-        public static Data.Mesh Generate( GSKNChunk gsknChunk, DX dx )
+        public static Data.Mesh Generate( GSKNChunk gsknChunk, PBONChunk bone, DX dx )
         {
-            return Generate( gsknChunk.Geometry, dx );
+            return Generate( gsknChunk.Geometry, bone, dx );
         }
 
-        public static Data.Mesh Generate( GPCEChunk gpceChunk, DX dx )
+        public static Data.Mesh Generate( GPCEChunk gpceChunk, PBONChunk bone, DX dx )
         {
             var faces = gpceChunk.IndexBuffer.Faces;
             var vertices = gpceChunk.VertexBuffer.Vertices;
             var normals = gpceChunk.VertexBuffer.Normals;
             var uvs = gpceChunk.VertexBuffer.UVs;
             var colors = gpceChunk.VertexBuffer.Colors;
-            //Vertex origin = gpceChunk.BoundingBox.Origin;
-            //Vertex vMin = gpceChunk.BoundingBox.VertexMin;
-            //Vertex vMax = gpceChunk.BoundingBox.VertexMax;
+            Vertex origin = gpceChunk.BoundingBox.Origin;
+            Vertex vMin = gpceChunk.BoundingBox.VertexMin;
+            Vertex vMax = gpceChunk.BoundingBox.VertexMax;
 
             List<Vector3> vertices3 = vertices.Select( v => new Vector3( v.X, v.Y, v.Z ) ).ToList();
             List<Vector3> normals3 = normals == null ? null : normals.Select( n => new Vector3( n.X, n.Y, n.Z ) ).ToList();
@@ -109,6 +123,32 @@ namespace TRRM.Viewer
                 }
             }
 
+            if ( bone != null )
+            {             
+                // apply bone rotation
+                Quaternion boneRotation = new Quaternion( bone.BoneData.Rotation );
+                for ( int i = 0; i < vertices3.Count; i++ )
+                {
+                    vertices3[ i ] = Vector3.Transform( vertices3[ i ], boneRotation );
+                }
+
+                // apply bone scaling
+                Matrix boneScale = Matrix.Identity;
+                boneScale.ScaleVector = new Vector3( bone.BoneData.Scale );
+                for ( int i = 0; i < vertices3.Count; i++ )
+                {
+                    Vector4 temp = Vector3.Transform( vertices3[ i ], boneScale );
+                    vertices3[ i ] = new Vector3( temp.X, temp.Y, temp.Z );
+                }
+
+                // apply bone translation
+                Vector3 boneOffset = new Vector3( bone.BoneData.Translation );
+                for ( int i = 0; i < vertices3.Count; i++ )
+                {
+                    vertices3[ i ] += boneOffset;
+                }
+            }
+
             Data.Mesh mesh = new Viewer.Data.Mesh( dx );
             mesh.Create( vertices3, faces, uvs2, colors1, normals3 );
             mesh.LoadDiffuseTexture( textureData );
@@ -118,8 +158,6 @@ namespace TRRM.Viewer
             //    VMin = new Vector3( vMin.X, vMin.Y, vMin.Z ),
             //    VMax = new Vector3( vMax.X, vMax.Y, vMax.Z )
             //};
-            //mesh.CreateBoundingBox( vMin, vMax, origin );
-            //mesh.BoundingBox.Origin = new Vector3( -origin.X, -origin.Y, -origin.Z );
 
             return mesh;
         }

@@ -14,6 +14,7 @@ namespace TRRM
         public VERTChunk VertexBuffer;
         public BBOXChunk BoundingBox;
         public USDAChunk USDA;
+        public string BoneName;
 
         public override bool Load( BinaryReader reader )
         {
@@ -81,11 +82,15 @@ namespace TRRM
             {
                 return false;
             }
-            string unk1 = reader.ReadCString();
+
+            // bone to which this piece is attached
+            BoneName = reader.ReadCString();
+
             UInt32 unk2 = reader.ReadUInt32();
             Int32 unk3 = reader.ReadInt32();
             string unk4 = reader.ReadCString();
             string unk5 = reader.ReadCString();
+
             ChunkType nextChunk = ChunkUtils.PeekNextChunk( reader );
             if ( nextChunk == ChunkType.gfxUSDA )
             {
@@ -95,6 +100,7 @@ namespace TRRM
                     return false;
                 }
             }
+
             Int32 unk6 = reader.ReadInt32();
             UInt32 unk7 = reader.ReadUInt32();
             Int32 unk8 = reader.ReadInt32();
