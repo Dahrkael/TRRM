@@ -82,6 +82,8 @@ namespace TRRM.Viewer
         private D3D9.Effect basicEffect;
         private D3D9.Effect lightEffect;
 
+        private Vector3 camera = new Vector3(0f, 0f, 1.75f);
+
         public FormViewer3D()
             : base( "TRRM - 3D Viewer" )
         {
@@ -196,6 +198,16 @@ namespace TRRM.Viewer
             testCube.Create( new Vector3( -5, -5, -5 ), new Vector3( 5, 5, 5 ), new Vector3( 0, 0, 0 ) );
         }
 
+        public void SetRenderState(bool wireframe)
+        {
+            DX.Device.SetRenderState(D3D9.RenderState.FillMode, wireframe ? D3D9.FillMode.Wireframe : D3D9.FillMode.Solid);
+        }
+
+        public void SetRenderZoom(float value)
+        {
+            camera.Z = value;
+        }
+
         private void RenderFunction()
         {
             RenderLoop.RenderCallback callback = new RenderLoop.RenderCallback( RenderCallback );
@@ -233,8 +245,6 @@ namespace TRRM.Viewer
 
             // disable culling because rotation
             DX.Device.SetRenderState( D3D9.RenderState.CullMode, D3D9.Cull.None );
-            // wireframe is cool
-            //Device.SetRenderState( D3D9.RenderState.FillMode, D3D9.FillMode.Wireframe );
 
             float fov = (float)Math.PI / 4.0f;
             float maxZ = 25.0f;
@@ -249,10 +259,10 @@ namespace TRRM.Viewer
                 //distance += 0.5f * radius;
                 //maxZ = distance;
 
-                maxZ = radius * 1.75f;
+                maxZ = radius * camera.Z;
             }
 
-            Vector3 eyeVector = new Vector3( 0.0f, 0.0f, -maxZ );
+            Vector3 eyeVector = new Vector3(camera.X, camera.Y, -maxZ);
             Vector3 lookAtVector = new Vector3( 0.0f, 0.0f, 0.0f );
             Vector3 upVector = new Vector3( 0.0f, 1.0f, 0.0f );
 

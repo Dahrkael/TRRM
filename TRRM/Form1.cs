@@ -255,5 +255,15 @@ namespace TRRM
                // MessageBox.Show( "Failed to load geometry file" );
             }
         }
+
+        private void viewWireframe_CheckedChanged(object sender, EventArgs e)
+        {
+            viewer3D.SetRenderState(viewWireframe.Checked);
+        }
+
+        private void cameraZ_ValueChanged(object sender, EventArgs e)
+        {
+            viewer3D.SetRenderZoom(Convert.ToSingle(cameraZ.Value));
+        }
     }
 }

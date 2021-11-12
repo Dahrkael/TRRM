@@ -32,6 +32,8 @@
             this.buttonExtract = new System.Windows.Forms.Button();
             this.saveDialog = new System.Windows.Forms.SaveFileDialog();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.viewWireframe = new System.Windows.Forms.CheckBox();
             this.btnTestPARM = new System.Windows.Forms.Button();
             this.btnAll = new System.Windows.Forms.Button();
             this.btnSearch = new System.Windows.Forms.Button();
@@ -40,8 +42,10 @@
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.filesTV = new System.Windows.Forms.TreeView();
             this.chooseFolderDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.cameraZ = new System.Windows.Forms.NumericUpDown();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.cameraZ)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOpen
@@ -67,6 +71,9 @@
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox1.Controls.Add(this.cameraZ);
+            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.viewWireframe);
             this.groupBox1.Controls.Add(this.btnTestPARM);
             this.groupBox1.Controls.Add(this.btnAll);
             this.groupBox1.Controls.Add(this.btnSearch);
@@ -80,6 +87,26 @@
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Commands";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(255, 68);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(76, 13);
+            this.label1.TabIndex = 13;
+            this.label1.Text = "Camera Zoom:";
+            // 
+            // viewWireframe
+            // 
+            this.viewWireframe.AutoSize = true;
+            this.viewWireframe.Location = new System.Drawing.Point(445, 64);
+            this.viewWireframe.Name = "viewWireframe";
+            this.viewWireframe.Size = new System.Drawing.Size(74, 17);
+            this.viewWireframe.TabIndex = 12;
+            this.viewWireframe.Text = "Wireframe";
+            this.viewWireframe.UseVisualStyleBackColor = true;
+            this.viewWireframe.CheckedChanged += new System.EventHandler(this.viewWireframe_CheckedChanged);
             // 
             // btnTestPARM
             // 
@@ -157,6 +184,36 @@
             // 
             this.chooseFolderDialog.ShowNewFolderButton = false;
             // 
+            // cameraZ
+            // 
+            this.cameraZ.DecimalPlaces = 2;
+            this.cameraZ.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.cameraZ.Location = new System.Drawing.Point(337, 63);
+            this.cameraZ.Maximum = new decimal(new int[] {
+            25,
+            0,
+            0,
+            0});
+            this.cameraZ.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.cameraZ.Name = "cameraZ";
+            this.cameraZ.Size = new System.Drawing.Size(58, 20);
+            this.cameraZ.TabIndex = 14;
+            this.cameraZ.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.cameraZ.Value = new decimal(new int[] {
+            175,
+            0,
+            0,
+            131072});
+            this.cameraZ.ValueChanged += new System.EventHandler(this.cameraZ_ValueChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -169,6 +226,7 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.cameraZ)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -187,6 +245,9 @@
         private System.Windows.Forms.TextBox txtSearch;
         private System.Windows.Forms.Button btnAll;
         private System.Windows.Forms.Button btnTestPARM;
+        private System.Windows.Forms.CheckBox viewWireframe;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.NumericUpDown cameraZ;
     }
 }
 
