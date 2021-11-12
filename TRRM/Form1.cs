@@ -245,7 +245,7 @@ namespace TRRM
                     {
                         GBODChunk gbod = chunkie.Chunks[ 0 ] as GBODChunk;
                         var meshes = Viewer.ModelCreator.Generate( gbod, viewer3D.DX );
-                        var bbox = new Viewer.Data.BoundingBox( gbod.BoundingBox.VertexMin, gbod.BoundingBox.VertexMax, gbod.BoundingBox.Origin );
+                        var bbox = new Viewer.Data.BoundingBox( gbod.BoundingBox.Min, gbod.BoundingBox.Max, gbod.BoundingBox.Center, gbod.BoundingBox.Radius, gbod.BoundingBox.IsEmpty );
                         viewer3D.DisplayMeshes( meshes, bbox );
                         return;
                     }
