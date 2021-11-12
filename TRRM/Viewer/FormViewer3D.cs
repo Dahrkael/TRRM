@@ -86,8 +86,8 @@ namespace TRRM.Viewer
             : base( "TRRM - 3D Viewer" )
         {
             Icon = TRRM.Properties.Resources.trrm;
-            ClientSize = new System.Drawing.Size( 1280, 720 );//( 800, 600 );
-            AllowUserResizing = false;
+            ClientSize = new System.Drawing.Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+            AllowUserResizing = true;
 
             D3D9.Direct3D direct3D = new D3D9.Direct3D();
             DX = new DX(
