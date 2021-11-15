@@ -11,6 +11,7 @@ namespace TRRM
 
     public class DECLChunk : Chunk
     {
+        public readonly byte[] UsageLookup = new byte[] { 0, 1, 2, 3, 4, 0xA, 0xA, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD };
         public List<VertexDeclaration> Declarations;
         public Int32 TotalStride;
 
@@ -30,12 +31,19 @@ namespace TRRM
                     {
                         Debugger.Break();
                         Int32 count = reader.ReadInt32();
+                        byte currentOffset = 0;
                         for ( Int32 i = 0; i < count; i++ )
                         {
-                            reader.ReadUInt16();
-                            reader.ReadUInt16();
-                            reader.ReadUInt16();
-                            reader.ReadUInt16();
+                            VertexDeclaration declaration = new VertexDeclaration()
+                            {
+                                Offset = currentOffset,
+                                Type = (VertexDeclType)(byte)reader.ReadInt16(),
+                                Method = (VertexDeclMethod)(byte)reader.ReadInt16(),
+                                Usage = (VertexDeclUsage)UsageLookup[(byte)reader.ReadInt16()],
+                                UsageIndex = (byte)reader.ReadInt16()
+                            };
+                            Declarations.Add(declaration);
+                            currentOffset += declaration.Stride();
                         }
                     }
                     break;
