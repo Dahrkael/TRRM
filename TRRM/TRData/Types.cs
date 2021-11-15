@@ -39,6 +39,41 @@ namespace TRRM
     }
 
     [StructLayout( LayoutKind.Sequential, Pack = 4 )]
+    public struct Quat
+    {
+        public float X;
+        public float Y;
+        public float Z;
+        public float W;
+
+        public Quat( float x, float y, float z, float w )
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            W = w;
+        }
+
+        public byte[] AsBytes()
+        {
+            byte[] data = new byte[ Size ];
+            Array.Copy( BitConverter.GetBytes(X), 0, data, 0, sizeof( float ) );
+            Array.Copy( BitConverter.GetBytes(Y), 0, data, sizeof( float ), sizeof( float ) );
+            Array.Copy( BitConverter.GetBytes(Z), 0, data, sizeof( float ) * 2, sizeof( float ) );
+            Array.Copy( BitConverter.GetBytes(W), 0, data, sizeof( float ) * 3, sizeof( float ) );
+
+            return data;
+        }
+
+        public override string ToString()
+        {
+            return String.Format( "Q[{0} : {1} : {2} : {3}]", X, Y, Z, W );
+        }
+
+        public const Int32 Size = sizeof( float ) * 4;
+    }
+
+    [StructLayout( LayoutKind.Sequential, Pack = 4 )]
     public struct Face
     {
         public UInt16 A;
