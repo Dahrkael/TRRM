@@ -24,19 +24,25 @@ namespace TRRM.Viewer.Data
         public Vector3 VMin { get; set; }
         public Vector3 VMax { get; set; }
         public Vector3 Origin { get; set; }
+        public float Radius { get; set; }
+        public bool IsEmpty { get; set; }
 
         public BoundingBox()
         {
             VMin = Vector3.Zero;
             VMax = Vector3.Zero;
             Origin = Vector3.Zero;
+            Radius = 0.0f;
+            IsEmpty = true;
         }
 
-        public BoundingBox( Vertex vMin, Vertex vMax, Vertex origin )
+        public BoundingBox( Vertex vMin, Vertex vMax, Vertex origin, float radius, bool isEmpty )
         {
             VMin = new Vector3( vMin.X, vMin.Y, vMin.Z );
             VMax = new Vector3( vMax.X, vMax.Y, vMax.Z );
             Origin = new Vector3( origin.X, origin.Y, origin.Z );
+            Radius = radius;
+            IsEmpty = isEmpty;
         }
 
         public BoundingBox( List<Vector3> vertices )

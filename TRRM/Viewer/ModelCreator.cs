@@ -74,9 +74,9 @@ namespace TRRM.Viewer
             var normals = gpceChunk.VertexBuffer.Normals;
             var uvs = gpceChunk.VertexBuffer.UVs;
             var colors = gpceChunk.VertexBuffer.Colors;
-            Vertex origin = gpceChunk.BoundingBox.Origin;
-            Vertex vMin = gpceChunk.BoundingBox.VertexMin;
-            Vertex vMax = gpceChunk.BoundingBox.VertexMax;
+            Vertex origin = gpceChunk.BoundingBox.Center;
+            Vertex vMin = gpceChunk.BoundingBox.Min;
+            Vertex vMax = gpceChunk.BoundingBox.Max;
 
             List<Vector3> vertices3 = vertices.Select( v => new Vector3( v.X, v.Y, v.Z ) ).ToList();
             List<Vector3> normals3 = normals == null ? null : normals.Select( n => new Vector3( n.X, n.Y, n.Z ) ).ToList();
